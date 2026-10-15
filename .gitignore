@@ -1,0 +1,13 @@
+# 依赖（部署时由 npm install 重新生成）
+node_modules/
+
+# 运行数据（订单、激活记录、自动生成的管理密钥）—— 含隐私，勿提交
+data.json
+admin.key
+server.log
+
+# 本地配置（含你的真实密钥，勿提交；用 .env.example 当模板）
+.env
+
+# WorkBuddy 项目数据目录（工作日志等，非产品代码）
+.workbuddy/
