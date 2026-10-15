@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>我们的恋爱记录</title>
+<style>
+  :root{
+    --theme:#ff6b9d;
+    --theme-soft:#ffe3ee;
+    --theme-deep:#e24d80;
+    --bg1:#fff5f8;
+    --bg2:#fdeef6;
+    --card:#ffffff;
+    --text:#3a2c33;
+    --muted:#9b8790;
+    --shadow:0 8px 30px rgba(255,107,157,.15);
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+  html,body{height:100%;}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;
+    background:linear-gradient(160deg,var(--bg1),var(--bg2));
+    color:var(--text);
+    min-height:100vh;
+    padding-bottom:90px;
+  }
+  /* 顶部 */
+  header{
+    text-align:center;
+    padding:28px 16px 16px;
+    background:linear-gradient(135deg,var(--theme),var(--theme-deep));
+    color:#fff;
+    border-bottom-left-radius:24px;
+    border-bottom-right-radius:24px;
+    box-shadow:var(--shadow);
+  }
+  header .couple{font-size:22px;font-weight:700;letter-spacing:1px;}
+  header .couple .heart{display:inline-block;margin:0 8px;animation:beat 1.2s infinite;}
+  @keyframes beat{0%,100%{transform:scale(1);}25%{transform:scale(1.25);}50%{transform:scale(1);}}
+  header .days{margin-top:10px;font-size:14px;opacity:.95;}
+  header .days b{font-size:30px;display:block;margin-top:2px;}
+
+  /* 导航 */
+  nav{
+    position:fixed;left:0;right:0;bottom:0;
+    display:flex;justify-content:space-around;
+    background:rgba(255,255,255,.96);
+    backdrop-filter:blur(8px);
+    box-shadow:0 -4px 20px rgba(0,0,0,.06);
+    padding:8px 0;z-index:50;
+  }
+  nav button{
+    border:none;background:none;cursor:pointer;
+    font-size:11px;color:var(--muted);
+    display:flex;flex-direction:column;align-items:center;gap:2px;
+    flex:1;padding:4px 0;transition:.2s;
+  }
+  nav button .ic{font-size:20px;line-height:1;}
+  nav button.active{color:var(--theme);font-weight:600;}
+  nav button.active .ic{transform:translateY(-2px);}
+
+  /* 内容 */
+  main{max-width:640px;margin:0 auto;padding:18px 14px;}
+  section{display:none;animation:fade .35s ease;}
+  section.active{display:block;}
+  @keyframes fade{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}
+
+  .card{
+    background:var(--card);border-radius:18px;padding:18px;
+    box-shadow:var(--shadow);margin-bottom:16px;
+  }
+  .card h3{font-size:16px;margin-bottom:12px;display:flex;align-items:center;gap:6px;}
+  .card h3 .tag{font-size:12px;color:var(--theme);background:var(--theme-soft);padding:2px 8px;border-radius:20px;}
+
+  /* 首页统计 */
+  .stat-row{display:flex;gap:12px;}
+  .stat{flex:1;background:var(--theme-soft);border-radius:14px;padding:14px;text-align:center;}
+  .stat .num{font-size:26px;font-weight:700;color:var(--theme-deep);}
+  .stat .lbl{font-size:12px;color:var(--muted);margin-top:4px;}
+  .next-anni{margin-top:12px;text-align:center;font-size:14px;color:var(--text);}
+  .next-anni b{color:var(--theme-deep);}
+
+  /* 表单 */
+  label{display:block;font-size:13px;color:var(--muted);margin:10px 0 4px;}
+  input[type=text],input[type=date],textarea,select{
+    width:100%;border:1.5px solid #ffe0ec;border-radius:12px;
+    padding:11px 12px;font-size:15px;font-family:inherit;color:var(--text);
+    background:#fffdfe;outline:none;transition:.2s;
+  }
+  input:focus,textarea:focus,select:focus{border-color:var(--theme);}
+  textarea{resize:vertical;min-height:84px;}
+
+  .who{display:flex;gap:10px;margin:6px 0 4px;}
+  .who label{flex:1;margin:0;}
+  .who input{display:none;}
+  .who .pill{
+    display:block;text-align:center;padding:10px;border-radius:12px;
+    border:1.5px solid #ffe0ec;background:#fffdfe;cursor:pointer;font-size:14px;transition:.2s;
+  }
+  .who input:checked + .pill{background:var(--theme);color:#fff;border-color:var(--theme);font-weight:600;}
+
+  .moods{display:flex;flex-wrap:wrap;gap:8px;margin:6px 0;}
+  .moods label{margin:0;}
+  .moods input{display:none;}
+  .moods .m{font-size:22px;padding:6px 8px;border-radius:10px;background:#fffdfe;border:1.5px solid #ffe0ec;cursor:pointer;transition:.15s;}
+  .moods input:checked + .m{background:var(--theme-soft);transform:scale(1.12);border-color:var(--theme);}
+
+  .btn{
+    display:inline-block;border:none;border-radius:12px;padding:12px 18px;
+    background:var(--theme);color:#fff;font-size:15px;font-weight:600;cursor:pointer;
+    width:100%;margin-top:14px;transition:.2s;box-shadow:0 4px 14px rgba(255,107,157,.3);
+  }
+  .btn:active{transform:scale(.98);}
+  .btn.ghost{background:#fff;color:var(--theme);border:1.5px solid var(--theme);box-shadow:none;}
+
+  /* 日记/列表项 */
+  .item{display:flex;gap:12px;padding:14px 0;border-bottom:1px solid #f4eef1;}
+  .item:last-child{border-bottom:none;}
+  .avatar{width:40px;height:40px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:16px;}
+  .item .body{flex:1;min-width:0;}
+  .item .meta{font-size:12px;color:var(--muted);margin-bottom:3px;}
+  .item .meta .name{color:var(--theme-deep);font-weight:600;}
+  .item .txt{font-size:15px;line-height:1.55;word-break:break-word;white-space:pre-wrap;}
+  .item .del{color:#ccc;font-size:18px;cursor:pointer;padding:0 4px;}
+  .empty{text-align:center;color:var(--muted);padding:30px 0;font-size:14px;}
+
+  /* 相册 */
+  .album-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+  .album-grid .ph{position:relative;aspect-ratio:1;border-radius:12px;overflow:hidden;cursor:pointer;background:#f4eef1;}
+  .album-grid .ph img{width:100%;height:100%;object-fit:cover;transition:.25s;}
+  .album-grid .ph:hover img{transform:scale(1.06);}
+  .album-grid .ph .cap{position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,.45);color:#fff;font-size:11px;padding:4px 6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+
+  /* 愿望 */
+  .wish{display:flex;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid #f4eef1;}
+  .wish:last-child{border-bottom:none;}
+  .wish .chk{width:22px;height:22px;border-radius:50%;border:2px solid var(--theme);flex-shrink:0;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px;}
+  .wish.done .chk{background:var(--theme);}
+  .wish.done .wtext{text-decoration:line-through;color:var(--muted);}
+  .wish .wtext{flex:1;font-size:15px;}
+  .wish .del{color:#ccc;font-size:18px;cursor:pointer;}
+
+  /* 悄悄话气泡 */
+  .bubble{max-width:78%;padding:10px 14px;border-radius:16px;margin:8px 0;font-size:14px;line-height:1.5;word-break:break-word;}
+  .bubble .who-lbl{font-size:11px;opacity:.7;margin-bottom:2px;}
+  .bubble.me{background:var(--theme);color:#fff;margin-left:auto;border-bottom-right-radius:4px;}
+  .bubble.you{background:#fff;border:1px solid #ffe0ec;margin-right:auto;border-bottom-left-radius:4px;}
+
+  /* 设置 */
+  .theme-pick{display:flex;gap:10px;flex-wrap:wrap;}
+  .theme-pick .sw{width:36px;height:36px;border-radius:50%;cursor:pointer;border:3px solid transparent;}
+  .theme-pick .sw.sel{border-color:#fff;box-shadow:0 0 0 2px var(--text);}
+
+  /* 遮罩 */
+  .overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;z-index:100;padding:20px;}
+  .overlay.show{display:flex;}
+  .overlay .box{background:#fff;border-radius:20px;padding:24px;max-width:420px;width:100%;max-height:88vh;overflow:auto;}
+  .overlay .box h2{font-size:19px;margin-bottom:6px;}
+  .overlay .box p{font-size:13px;color:var(--muted);margin-bottom:14px;}
+  .lightbox img{max-width:100%;border-radius:12px;}
+
+  /* 提示 */
+  .toast{position:fixed;top:18px;left:50%;transform:translateX(-50%);background:rgba(58,44,51,.92);color:#fff;padding:10px 18px;border-radius:24px;font-size:14px;z-index:200;opacity:0;transition:.3s;pointer-events:none;}
+  .toast.show{opacity:1;}
+  .row{display:flex;gap:10px;}
+  .row .btn{flex:1;}
+  .hint{font-size:12px;color:var(--muted);margin-top:8px;line-height:1.5;}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="couple" id="hdrCouple">我们的恋爱记录</div>
+  <div class="days" id="hdrDays">设置后显示在一起天数 💕</div>
+</header>
+
+<main>
+  <!-- 首页 -->
+  <section id="sec-home" class="active">
+    <div class="card">
+      <h3>💞 我们的小日子</h3>
+      <div class="stat-row">
+        <div class="stat"><div class="num" id="statDays">—</div><div class="lbl">在一起天数</div></div>
+        <div class="stat"><div class="num" id="statDiary">0</div><div class="lbl">日记篇数</div></div>
+        <div class="stat"><div class="num" id="statPhoto">0</div><div class="lbl">相册照片</div></div>
+      </div>
+      <div class="next-anni" id="nextAnni">设置纪念日后可显示倒计时</div>
+    </div>
+    <div class="card">
+      <h3>📌 最近动态</h3>
+      <div id="recentList"><div class="empty">还没有记录，去日记或相册里写第一条吧～</div></div>
+    </div>
+  </section>
+
+  <!-- 日记 -->
+  <section id="sec-diary">
+    <div class="card">
+      <h3>✍️ 写日记 <span class="tag">记录今天的心情</span></h3>
+      <div class="who" id="diaryWho">
+        <label><input type="radio" name="dwho" value="A" checked><span class="pill" id="pillA">我</span></label>
+        <label><input type="radio" name="dwho" value="B"><span class="pill" id="pillB">另一半</span></label>
+      </div>
+      <label>日期</label>
+      <input type="date" id="diaryDate">
+      <label>心情</label>
+      <div class="moods" id="diaryMood">
+        <label><input type="radio" name="dmood" value="😊" checked><span class="m">😊</span></label>
+        <label><input type="radio" name="dmood" value="😍"><span class="m">😍</span></label>
+        <label><input type="radio" name="dmood" value="🥰"><span class="m">🥰</span></label>
+        <label><input type="radio" name="dmood" value="😘"><span class="m">😘</span></label>
+        <label><input type="radio" name="dmood" value="🤗"><span class="m">🤗</span></label>
+        <label><input type="radio" name="dmood" value="💕"><span class="m">💕</span></label>
+        <label><input type="radio" name="dmood" value="😢"><span class="m">😢</span></label>
+        <label><input type="radio" name="dmood" value="😴"><span class="m">😴</span></label>
+      </div>
+      <label>今天想说点什么</label>
+      <textarea id="diaryText" placeholder="例如：今天一起吃了火锅，好开心～"></textarea>
+      <button class="btn" id="addDiary">保存这篇日记</button>
+    </div>
+    <div class="card">
+      <h3>📖 全部日记</h3>
+      <div id="diaryList"><div class="empty">还没有日记</div></div>
+    </div>
+  </section>
+
+  <!-- 相册 -->
+  <section id="sec-album">
+    <div class="card">
+      <h3>📷 添加照片 <span class="tag">自动压缩存储</span></h3>
+      <div class="who">
+        <label><input type="radio" name="pwho" value="A" checked><span class="pill" id="pillA2">我</span></label>
+        <label><input type="radio" name="pwho" value="B"><span class="pill" id="pillB2">另一半</span></label>
+      </div>
+      <label>选择照片</label>
+      <input type="file" id="photoFile" accept="image/*">
+      <label>说明（可选）</label>
+      <input type="text" id="photoCap" placeholder="例如：第一次旅行">
+      <button class="btn" id="addPhoto">加入相册</button>
+      <div class="hint">照片会压缩后存在本机浏览器，建议单张不要过大，总量控制在几十张以内更稳妥。</div>
+    </div>
+    <div class="card">
+      <h3>🖼️ 我们的相册</h3>
+      <div class="album-grid" id="albumGrid"><div class="empty" style="grid-column:1/-1">还没有照片</div></div>
+    </div>
+  </section>
+
+  <!-- 愿望 -->
+  <section id="sec-wishes">
+    <div class="card">
+      <h3>🌟 愿望清单 <span class="tag">想一起做的事</span></h3>
+      <input type="text" id="wishInput" placeholder="例如：一起看一次海">
+      <button class="btn" id="addWish">添加愿望</button>
+    </div>
+    <div class="card">
+      <h3>✅ 清单</h3>
+      <div id="wishList"><div class="empty">还没有愿望</div></div>
+    </div>
+  </section>
+
+  <!-- 悄悄话 -->
+  <section id="sec-whisper">
+    <div class="card">
+      <h3>💌 悄悄话 <span class="tag">随时给对方留句话</span></h3>
+      <div class="who">
+        <label><input type="radio" name="wwho" value="A" checked><span class="pill" id="pillA3">我</span></label>
+        <label><input type="radio" name="wwho" value="B"><span class="pill" id="pillB3">另一半</span></label>
+      </div>
+      <input type="text" id="whisperInput" placeholder="写句悄悄话…">
+      <button class="btn" id="addWhisper">发送</button>
+      <div class="hint">气泡里「我」是你选的身份，「另一半」是对方。数据都在本机，记得用导出备份。</div>
+    </div>
+    <div class="card">
+      <div id="whisperList"><div class="empty">还没有悄悄话</div></div>
+    </div>
+  </section>
+
+  <!-- 设置 -->
+  <section id="sec-settings">
+    <div class="card">
+      <h3>⚙️ 基本设置</h3>
+      <label>我的昵称</label>
+      <input type="text" id="setNameA" placeholder="例如：小王">
+      <label>另一半昵称</label>
+      <input type="text" id="setNameB" placeholder="例如：小李">
+      <label>在一起日期</label>
+      <input type="date" id="setStart">
+      <label>主题颜色</label>
+      <div class="theme-pick" id="themePick"></div>
+      <button class="btn" id="saveSettings">保存设置</button>
+    </div>
+    <div class="card">
+      <h3>📅 纪念日</h3>
+      <div id="anniList"></div>
+      <div class="row" style="margin-top:10px;">
+        <input type="text" id="anniName" placeholder="名称，如：领证日">
+        <input type="date" id="anniDate" style="flex:1.2;">
+      </div>
+      <button class="btn ghost" id="addAnni" style="margin-top:10px;">添加纪念日</button>
+    </div>
+    <div class="card">
+      <h3>💾 数据备份</h3>
+      <div class="row">
+        <button class="btn ghost" id="exportBtn">导出备份</button>
+        <button class="btn ghost" id="importBtn">导入备份</button>
+      </div>
+      <input type="file" id="importFile" accept="application/json" style="display:none;">
+      <button class="btn ghost" id="clearBtn" style="margin-top:10px;color:#e24d80;border-color:#e24d80;">清空全部数据</button>
+      <div class="hint">导出会下载一个 .json 文件，换手机/浏览器时可导入恢复。清空后无法恢复，请谨慎。</div>
+    </div>
+  </section>
+</main>
+
+<!-- 底部导航 -->
+<nav id="nav">
+  <button data-sec="home" class="active"><span class="ic">🏠</span>首页</button>
+  <button data-sec="diary"><span class="ic">✍️</span>日记</button>
+  <button data-sec="album"><span class="ic">📷</span>相册</button>
+  <button data-sec="wishes"><span class="ic">🌟</span>愿望</button>
+  <button data-sec="whisper"><span class="ic">💌</span>悄悄话</button>
+  <button data-sec="settings"><span class="ic">⚙️</span>设置</button>
+</nav>
+
+<!-- 首次设置遮罩 -->
+<div class="overlay show" id="setupOverlay">
+  <div class="box">
+    <h2>💕 欢迎来到你们的恋爱记录</h2>
+    <p>先填一下基本信息，之后随时能在「设置」里修改。</p>
+    <label>我的昵称</label>
+    <input type="text" id="sNameA" placeholder="例如：小王">
+    <label>另一半昵称</label>
+    <input type="text" id="sNameB" placeholder="例如：小李">
+    <label>在一起日期</label>
+    <input type="date" id="sStart">
+    <button class="btn" id="setupBtn">开始记录我们的爱情</button>
+  </div>
+</div>
+
+<!-- 照片放大 -->
+<div class="overlay" id="lightbox">
+  <div class="box" style="background:transparent;box-shadow:none;text-align:center;">
+    <img id="lightboxImg" src="" alt="">
+    <div id="lightboxCap" style="color:#fff;margin-top:10px;font-size:14px;"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+  "use strict";
+  var KEY="loveDiaryData_v1";
+  var THEMES=["#ff6b9d","#a78bfa","#5b8def","#34c98b","#ff9f43","#ff6b6b"];
+  var state={settings:{nameA:"我",nameB:"另一半",startDate:"",theme:"#ff6b9d",anniversaries:[]},diaries:[],photos:[],wishes:[],whispers:[]};
+
+  function load(){
+    try{
+      var raw=localStorage.getItem(KEY);
+      if(raw){var d=JSON.parse(raw);if(d&&d.settings)state=d;}
+    }catch(e){console.warn("load fail",e);}
+  }
+  function save(){
+    try{localStorage.setItem(KEY,JSON.stringify(state));}catch(e){toast("保存失败：存储空间可能已满");}
+  }
+  function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7);}
+  function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];});}
+  function fmtDate(s){if(!s)return"";return s;}
+  function ini(s){return (s||"?").trim().charAt(0).toUpperCase();}
+  function toast(msg){var t=document.getElementById("toast");t.textContent=msg;t.classList.add("show");setTimeout(function(){t.classList.remove("show");},1800);}
+
+  function applyTheme(){
+    var c=state.settings.theme||"#ff6b9d";
+    document.documentElement.style.setProperty("--theme",c);
+    // 计算柔和与深色
+    document.documentElement.style.setProperty("--theme-soft",hexA(c,0.12));
+    document.documentElement.style.setProperty("--theme-deep",shade(c,-18));
+    document.documentElement.style.setProperty("--bg1",shade(c,92));
+    document.documentElement.style.setProperty("--bg2",shade(c,96));
+  }
+  function hexA(hex,a){
+    var r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);
+    return "rgba("+r+","+g+","+b+","+a+")";
+  }
+  function shade(hex,p){
+    var r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);
+    var f=function(v){return Math.max(0,Math.min(255,Math.round(v+(p/100)*255)));};
+    return "rgb("+f(r)+","+f(g)+","+f(b)+")";
+  }
+
+  function nameOf(who){return who==="A"?(state.settings.nameA||"我"):(state.settings.nameB||"另一半");}
+  function colorOf(who){return who==="A"?state.settings.theme:"#8a7a82";}
+
+  /* ---------- 渲染 ---------- */
+  function renderHeader(){
+    var a=state.settings.nameA||"我",b=state.settings.nameB||"另一半";
+    document.getElementById("hdrCouple").innerHTML=esc(a)+'<span class="heart">❤️</span>'+esc(b);
+    if(state.settings.startDate){
+      var d=daysBetween(state.settings.startDate,new Date().toISOString().slice(0,10));
+      document.getElementById("hdrDays").innerHTML='已经在一起 <b>'+d+'</b> 天';
+    }else{
+      document.getElementById("hdrDays").textContent="设置后显示在一起天数 💕";
+    }
+    document.getElementById("statDays").textContent=state.settings.startDate?daysBetween(state.settings.startDate,new Date().toISOString().slice(0,10)):"—";
+    document.getElementById("statDiary").textContent=state.settings.diaries?state.settings.diaries.length:state.diaries.length;
+    document.getElementById("statPhoto").textContent=state.photos.length;
+    // 纪念日倒计时
+    var na=nextAnniversary();
+    var el=document.getElementById("nextAnni");
+    if(na){
+      if(na.inDays===0){el.innerHTML="🎉 今天是 <b>"+esc(na.name)+"</b>，祝你们甜甜蜜蜜！";}
+      else{el.innerHTML="距离 <b>"+esc(na.name)+"</b> 还有 <b>"+na.inDays+"</b> 天";}
+    }else{el.textContent="设置纪念日后可显示倒计时";}
+    // 最近动态
+    renderRecent();
+  }
+  function daysBetween(a,b){
+    var da=new Date(a+"T00:00:00"),db=new Date(b+"T00:00:00");
+    return Math.max(0,Math.round((db-da)/86400000));
+  }
+  function nextAnniversary(){
+    var list=state.settings.anniversaries||[];
+    if(!list.length)return null;
+    var today=new Date();today.setHours(0,0,0,0);
+    var best=null;
+    list.forEach(function(an){
+      var base=new Date(an.date+"T00:00:00");
+      var y=today.getFullYear();
+      var cand=new Date(y,base.getMonth(),base.getDate());
+      if(cand<today)cand=new Date(y+1,base.getMonth(),base.getDate());
+      var diff=Math.round((cand-today)/86400000);
+      if(best===null||diff<best.inDays)best={name:an.name,inDays:diff};
+    });
+    return best;
+  }
+  function renderRecent(){
+    var items=[];
+    state.diaries.forEach(function(d){items.push({t:"diary",d:d});});
+    state.photos.forEach(function(p){items.push({t:"photo",d:p});});
+    state.whispers.forEach(function(w){items.push({t:"whisper",d:w});});
+    state.wishes.forEach(function(w){items.push({t:"wish",d:w});});
+    items.sort(function(x,y){return (y.d.createdAt||0)-(x.d.createdAt||0);});
+    var box=document.getElementById("recentList");
+    if(!items.length){box.innerHTML='<div class="empty">还没有记录，去日记或相册里写第一条吧～</div>';return;}
+    var h="";
+    items.slice(0,6).forEach(function(it){
+      var d=it.d;
+      if(it.t==="diary"){
+        h+='<div class="item"><div class="avatar" style="background:'+colorOf(d.who)+'">'+ini(nameOf(d.who))+'</div><div class="body"><div class="meta"><span class="name">'+esc(nameOf(d.who))+'</span> '+d.mood+' '+fmtDate(d.date)+'</div><div class="txt">'+esc(d.text)+'</div></div></div>';
+      }else if(it.t==="photo"){
+        h+='<div class="item"><div class="avatar" style="background:'+colorOf(d.who)+'">'+ini(nameOf(d.who))+'</div><div class="body"><div class="meta"><span class="name">'+esc(nameOf(d.who))+'</span> 上传了照片 '+fmtDate(d.date)+'</div><div class="txt">'+(d.caption?esc(d.caption):"")+'</div></div></div>';
+      }else if(it.t==="whisper"){
+        h+='<div class="item"><div class="avatar" style="background:'+colorOf(d.who)+'">'+ini(nameOf(d.who))+'</div><div class="body"><div class="meta"><span class="name">'+esc(nameOf(d.who))+'</span> 悄悄话</div><div class="txt">'+esc(d.text)+'</div></div></div>';
+      }else{
+        h+='<div class="item"><div class="avatar" style="background:var(--theme)">🌟</div><div class="body"><div class="meta">愿望'+(d.done?"（已完成）":"")+'</div><div class="txt">'+esc(d.text)+'</div></div></div>';
+      }
+    });
+    box.innerHTML=h;
+  }
+
+  function renderDiary(){
+    var box=document.getElementById("diaryList");
+    if(!state.diaries.length){box.innerHTML='<div class="empty">还没有日记</div>';return;}
+    var arr=state.diaries.slice().sort(function(a,b){return (b.createdAt||0)-(a.createdAt||0);});
+    var h="";
+    arr.forEach(function(d){
+      h+='<div class="item"><div class="avatar" style="background:'+colorOf(d.who)+'">'+ini(nameOf(d.who))+'</div>'+
+         '<div class="body"><div class="meta"><span class="name">'+esc(nameOf(d.who))+'</span> '+d.mood+' · '+fmtDate(d.date)+'</div>'+
+         '<div class="txt">'+esc(d.text)+'</div></div>'+
+         '<span class="del" data-del-d="'+d.id+'">🗑️</span></div>';
+    });
+    box.innerHTML=h;
+    Array.prototype.forEach.call(box.querySelectorAll("[data-del-d]"),function(el){
+      el.onclick=function(){state.diaries=state.diaries.filter(function(x){return x.id!==el.getAttribute("data-del-d");});save();renderDiary();renderHeader();toast("已删除");};
+    });
+  }
+
+  function renderAlbum(){
+    var grid=document.getElementById("albumGrid");
+    if(!state.photos.length){grid.innerHTML='<div class="empty" style="grid-column:1/-1">还没有照片</div>';return;}
+    var arr=state.photos.slice().sort(function(a,b){return (b.createdAt||0)-(a.createdAt||0);});
+    var h="";
+    arr.forEach(function(p){
+      h+='<div class="ph" data-ph="'+p.id+'"><img src="'+p.src+'" alt=""><div class="cap">'+(p.caption?esc(p.caption):esc(nameOf(p.who)))+'</div></div>';
+    });
+    grid.innerHTML=h;
+    Array.prototype.forEach.call(grid.querySelectorAll("[data-ph]"),function(el){
+      el.onclick=function(){
+        var p=state.photos.filter(function(x){return x.id===el.getAttribute("data-ph");})[0];
+        if(!p)return;
+        document.getElementById("lightboxImg").src=p.src;
+        document.getElementById("lightboxCap").textContent=p.caption?p.caption:"";
+        document.getElementById("lightbox").classList.add("show");
+      };
+    });
+  }
+
+  function renderWishes(){
+    var box=document.getElementById("wishList");
+    if(!state.wishes.length){box.innerHTML='<div class="empty">还没有愿望</div>';return;}
+    var h="";
+    state.wishes.forEach(function(w){
+      h+='<div class="wish'+(w.done?" done":"")+'" data-w="'+w.id+'">'+
+         '<div class="chk" data-chk="'+w.id+'">'+(w.done?"✓":"")+'</div>'+
+         '<div class="wtext">'+esc(w.text)+'</div>'+
+         '<span class="del" data-del-w="'+w.id+'">🗑️</span></div>';
+    });
+    box.innerHTML=h;
+    Array.prototype.forEach.call(box.querySelectorAll("[data-chk]"),function(el){
+      el.onclick=function(){var id=el.getAttribute("data-chk");var w=state.wishes.filter(function(x){return x.id===id;})[0];if(w){w.done=!w.done;save();renderWishes();renderHeader();}};
+    });
+    Array.prototype.forEach.call(box.querySelectorAll("[data-del-w]"),function(el){
+      el.onclick=function(){state.wishes=state.wishes.filter(function(x){return x.id!==el.getAttribute("data-del-w");});save();renderWishes();renderHeader();toast("已删除");};
+    });
+  }
+
+  function renderWhispers(){
+    var box=document.getElementById("whisperList");
+    if(!state.whispers.length){box.innerHTML='<div class="empty">还没有悄悄话</div>';return;}
+    var arr=state.whispers.slice().sort(function(a,b){return (a.createdAt||0)-(b.createdAt||0);});
+    var h="";
+    arr.forEach(function(w){
+      var side=w.who==="A"?"me":"you";
+      h+='<div class="bubble '+side+'" data-ws="'+w.id+'"><div class="who-lbl">'+esc(nameOf(w.who))+'</div>'+esc(w.text)+'</div>';
+    });
+    box.innerHTML=h;
+    box.scrollTop=box.scrollHeight;
+    Array.prototype.forEach.call(box.querySelectorAll("[data-ws]"),function(el){
+      el.ondblclick=function(){state.whispers=state.whispers.filter(function(x){return x.id!==el.getAttribute("data-ws");});save();renderWhispers();renderHeader();toast("已删除");};
+    });
+  }
+
+  function renderAnni(){
+    var box=document.getElementById("anniList");
+    var list=state.settings.anniversaries||[];
+    if(!list.length){box.innerHTML='<div class="empty">还没有纪念日</div>';return;}
+    var h="";
+    list.forEach(function(a){
+      h+='<div class="item"><div class="avatar" style="background:var(--theme)">📅</div><div class="body"><div class="meta"><span class="name">'+esc(a.name)+'</span></div><div class="txt">'+fmtDate(a.date)+'</div></div><span class="del" data-del-a="'+esc(a.date)+'">🗑️</span></div>';
+    });
+    box.innerHTML=h;
+    Array.prototype.forEach.call(box.querySelectorAll("[data-del-a]"),function(el){
+      el.onclick=function(){var dt=el.getAttribute("data-del-a");state.settings.anniversaries=state.settings.anniversaries.filter(function(x){return x.date!==dt;});save();renderAnni();renderHeader();toast("已删除");};
+    });
+  }
+
+  function renderThemePick(){
+    var box=document.getElementById("themePick");
+    var h="";
+    THEMES.forEach(function(c){
+      h+='<div class="sw'+(state.settings.theme===c?" sel":"")+'" data-c="'+c+'" style="background:'+c+'"></div>';
+    });
+    box.innerHTML=h;
+    Array.prototype.forEach.call(box.querySelectorAll("[data-c]"),function(el){
+      el.onclick=function(){state.settings.theme=el.getAttribute("data-c");applyTheme();renderThemePick();renderHeader();save();};
+    });
+  }
+
+  function renderPills(){
+    document.getElementById("pillA").textContent=state.settings.nameA||"我";
+    document.getElementById("pillB").textContent=state.settings.nameB||"另一半";
+    document.getElementById("pillA2").textContent=state.settings.nameA||"我";
+    document.getElementById("pillB2").textContent=state.settings.nameB||"另一半";
+    document.getElementById("pillA3").textContent=state.settings.nameA||"我";
+    document.getElementById("pillB3").textContent=state.settings.nameB||"另一半";
+  }
+
+  function renderAll(){
+    applyTheme();renderPills();renderHeader();renderDiary();renderAlbum();renderWishes();renderWhispers();renderAnni();renderThemePick();
+    // 设置表单回填
+    document.getElementById("setNameA").value=state.settings.nameA||"";
+    document.getElementById("setNameB").value=state.settings.nameB||"";
+    document.getElementById("setStart").value=state.settings.startDate||"";
+    document.getElementById("diaryDate").value=new Date().toISOString().slice(0,10);
+  }
+
+  /* ---------- 事件 ---------- */
+  // 导航
+  Array.prototype.forEach.call(document.querySelectorAll("#nav button"),function(b){
+    b.onclick=function(){
+      var sec=b.getAttribute("data-sec");
+      Array.prototype.forEach.call(document.querySelectorAll("#nav button"),function(x){x.classList.remove("active");});
+      b.classList.add("active");
+      Array.prototype.forEach.call(document.querySelectorAll("main section"),function(s){s.classList.remove("active");});
+      document.getElementById("sec-"+sec).classList.add("active");
+      if(sec==="whisper"){var wl=document.getElementById("whisperList");wl.scrollTop=wl.scrollHeight;}
+    };
+  });
+
+  // 日记
+  document.getElementById("addDiary").onclick=function(){
+    var who=document.querySelector('input[name=dwho]:checked').value;
+    var date=document.getElementById("diaryDate").value||new Date().toISOString().slice(0,10);
+    var mood=document.querySelector('input[name=dmood]:checked').value;
+    var text=document.getElementById("diaryText").value.trim();
+    if(!text){toast("写点什么再保存吧");return;}
+    state.diaries.push({id:uid(),who:who,date:date,mood:mood,text:text,createdAt:Date.now()});
+    save();renderDiary();renderHeader();
+    document.getElementById("diaryText").value="";
+    toast("日记已保存 💕");
+  };
+
+  // 照片
+  document.getElementById("addPhoto").onclick=function(){
+    var file=document.getElementById("photoFile").files[0];
+    if(!file){toast("先选一张照片");return;}
+    var who=document.querySelector('input[name=pwho]:checked').value;
+    var cap=document.getElementById("photoCap").value.trim();
+    var reader=new FileReader();
+    reader.onload=function(e){
+      compress(e.target.result,function(dataUrl){
+        state.photos.push({id:uid(),who:who,date:new Date().toISOString().slice(0,10),src:dataUrl,caption:cap,createdAt:Date.now()});
+        save();renderAlbum();renderHeader();
+        document.getElementById("photoFile").value="";document.getElementById("photoCap").value="";
+        toast("照片已加入相册 📷");
+      });
+    };
+    reader.readAsDataURL(file);
+  };
+  function compress(dataUrl,cb){
+    var img=new Image();
+    img.onload=function(){
+      var max=1000, w=img.width,h=img.height;
+      if(w>max||h>max){var r=Math.min(max/w,max/h);w=Math.round(w*r);h=Math.round(h*r);}
+      var cv=document.createElement("canvas");cv.width=w;cv.height=h;
+      cv.getContext("2d").drawImage(img,0,0,w,h);
+      try{cb(cv.toDataURL("image/jpeg",0.82));}catch(e){cb(dataUrl);}
+    };
+    img.onerror=function(){cb(dataUrl);};
+    img.src=dataUrl;
+  }
+
+  // 愿望
+  document.getElementById("addWish").onclick=function(){
+    var t=document.getElementById("wishInput").value.trim();
+    if(!t){toast("写个愿望吧");return;}
+    state.wishes.push({id:uid(),text:t,done:false,createdAt:Date.now()});
+    save();renderWishes();renderHeader();
+    document.getElementById("wishInput").value="";toast("愿望已添加 🌟");
+  };
+
+  // 悄悄话
+  document.getElementById("addWhisper").onclick=function(){
+    var who=document.querySelector('input[name=wwho]:checked').value;
+    var t=document.getElementById("whisperInput").value.trim();
+    if(!t){toast("写点悄悄话吧");return;}
+    state.whispers.push({id:uid(),who:who,text:t,createdAt:Date.now()});
+    save();renderWhispers();renderHeader();
+    document.getElementById("whisperInput").value="";toast("已发送 💌");
+  };
+
+  // 设置保存
+  document.getElementById("saveSettings").onclick=function(){
+    state.settings.nameA=document.getElementById("setNameA").value.trim()||"我";
+    state.settings.nameB=document.getElementById("setNameB").value.trim()||"另一半";
+    state.settings.startDate=document.getElementById("setStart").value;
+    save();renderAll();toast("设置已保存");
+  };
+
+  // 纪念日
+  document.getElementById("addAnni").onclick=function(){
+    var n=document.getElementById("anniName").value.trim();
+    var d=document.getElementById("anniDate").value;
+    if(!n||!d){toast("填名称和日期");return;}
+    state.settings.anniversaries=state.settings.anniversaries||[];
+    state.settings.anniversaries.push({name:n,date:d});
+    save();renderAnni();renderHeader();
+    document.getElementById("anniName").value="";document.getElementById("anniDate").value="";
+    toast("纪念日已添加 📅");
+  };
+
+  // 导出/导入/清空
+  document.getElementById("exportBtn").onclick=function(){
+    var blob=new Blob([JSON.stringify(state,null,2)],{type:"application/json"});
+    var a=document.createElement("a");
+    a.href=URL.createObjectURL(blob);
+    a.download="恋爱记录备份_"+new Date().toISOString().slice(0,10)+".json";
+    a.click();toast("已导出备份");
+  };
+  document.getElementById("importBtn").onclick=function(){document.getElementById("importFile").click();};
+  document.getElementById("importFile").onchange=function(){
+    var f=this.files[0];if(!f)return;
+    var r=new FileReader();
+    r.onload=function(e){
+      try{var d=JSON.parse(e.target.result);if(d&&d.settings){state=d;save();renderAll();toast("导入成功 💕");}}catch(err){toast("文件格式不正确");}
+    };
+    r.readAsText(f);this.value="";
+  };
+  document.getElementById("clearBtn").onclick=function(){
+    if(confirm("确定清空全部数据？此操作不可恢复！建议先点「导出备份」。")){
+      localStorage.removeItem(KEY);
+      state={settings:{nameA:"我",nameB:"另一半",startDate:"",theme:"#ff6b9d",anniversaries:[]},diaries:[],photos:[],wishes:[],whispers:[]};
+      save();renderAll();toast("已清空");
+    }
+  };
+
+  // 首次设置
+  document.getElementById("setupBtn").onclick=function(){
+    var a=document.getElementById("sNameA").value.trim();
+    var b=document.getElementById("sNameB").value.trim();
+    var s=document.getElementById("sStart").value;
+    if(!a||!b||!s){toast("三项都要填哦");return;}
+    state.settings.nameA=a;state.settings.nameB=b;state.settings.startDate=s;
+    save();renderAll();
+    document.getElementById("setupOverlay").classList.remove("show");
+    toast("开始记录你们的爱情吧 💕");
+  };
+
+  // 关闭相册放大
+  document.getElementById("lightbox").onclick=function(){this.classList.remove("show");};
+
+  /* ---------- 启动 ---------- */
+  load();
+  if(state.settings&&state.settings.nameA&&state.settings.nameB&&state.settings.startDate){
+    document.getElementById("setupOverlay").classList.remove("show");
+    renderAll();
+  }else{
+    renderAll();
+  }
+})();
+</script>
+</body>
+</html>
