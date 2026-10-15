@@ -1,0 +1,35 @@
+# Render.com 一键部署配置
+# 部署步骤：
+#   1. 在 Render 新建 Web Service，连到包含本文件的仓库
+#   2. 选择本 yaml（或手动填：Build=`npm install`，Start=`node server.js`）
+#   3. 在 Environment 里填下面 sync:false 的变量（ADMIN_KEY、WX_*）
+#   4. 部署完成后，前端已零配置自动用当前域名，无需改代码；WX_NOTIFY_URL 需填成你的 https 域名+/api/payment/wechat/callback
+services:
+  - type: web
+    name: love-journey-server
+    runtime: node
+    plan: free
+    region: oreg
+    branch: main
+    buildCommand: npm install
+    startCommand: node server.js
+    healthCheckPath: /health
+    envVars:
+      - key: PORT
+        value: "3000"
+      - key: NODE_ENV
+        value: production
+      - key: ADMIN_KEY
+        sync: false
+      - key: WX_APPID
+        sync: false
+      - key: WX_MCHID
+        sync: false
+      - key: WX_APIV3_KEY
+        sync: false
+      - key: WX_SERIAL
+        sync: false
+      - key: WX_PRIVKEY
+        sync: false
+      - key: WX_NOTIFY_URL
+        sync: false
