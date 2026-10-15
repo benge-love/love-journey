@@ -1,0 +1,860 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>我们的恋爱心路历程</title>
+<style>
+  :root{
+    --boy:#3b82f6; --boy-soft:#e8f1ff; --boy-deep:#2563eb;
+    --girl:#ff6b9d; --girl-soft:#ffe3ee; --girl-deep:#e24d80;
+    --bg:#fbf7fb; --card:#fff; --text:#3a2c33; --muted:#9b8790;
+    --shadow:0 8px 30px rgba(120,90,130,.12);
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+  body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;
+    background:linear-gradient(135deg,#eef4ff 0%,#fff0f6 100%);color:var(--text);min-height:100vh;padding-bottom:90px;}
+
+  .hero{display:grid;grid-template-columns:1fr 1.3fr 1fr;align-items:center;gap:10px;
+    padding:26px 14px 22px;max-width:760px;margin:0 auto;}
+  .person{display:flex;flex-direction:column;align-items:center;text-align:center;}
+  .person .ava{width:84px;height:84px;border-radius:50%;object-fit:cover;border:3px solid #fff;
+    box-shadow:0 6px 18px rgba(0,0,0,.12);background:#eee;display:flex;align-items:center;justify-content:center;
+    font-size:30px;font-weight:700;color:#fff;overflow:hidden;}
+  .person.boy .ava{background:var(--boy);}
+  .person.girl .ava{background:var(--girl);}
+  .person .nm{margin-top:8px;font-size:17px;font-weight:700;}
+  .person .tag{font-size:12px;color:#fff;padding:2px 10px;border-radius:20px;margin-top:4px;}
+  .person.boy .tag{background:var(--boy);}
+  .person.girl .tag{background:var(--girl);}
+  .person .up{font-size:11px;color:var(--muted);margin-top:6px;cursor:pointer;text-decoration:underline;}
+
+  .center{text-align:center;}
+  .center .days{font-size:13px;color:var(--muted);}
+  .center .days b{display:block;font-size:38px;font-weight:800;line-height:1.1;
+    background:linear-gradient(90deg,var(--boy),var(--girl));-webkit-background-clip:text;background-clip:text;color:transparent;}
+  .center .days span{font-size:13px;color:var(--muted);}
+  .center .anni{margin-top:10px;font-size:12px;background:#fff;border-radius:14px;padding:8px 10px;box-shadow:var(--shadow);}
+  .center .anni b{color:var(--girl-deep);}
+
+  /* 试用条 */
+  .trialbar{display:none;align-items:center;gap:10px;max-width:760px;margin:0 auto;
+    background:linear-gradient(90deg,#fff7e6,#fff0d6);border:1px solid #ffe2a8;color:#8a6d3b;
+    border-radius:14px;padding:10px 14px;font-size:13px;box-shadow:var(--shadow);}
+  .trialbar.show{display:flex;}
+  .trialbar .txt{flex:1;line-height:1.4;}
+  .trialbar button{border:none;background:#f0a83c;color:#fff;border-radius:10px;padding:8px 14px;
+    font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;}
+
+  nav{position:fixed;left:0;right:0;bottom:0;display:flex;justify-content:space-around;
+    background:rgba(255,255,255,.96);backdrop-filter:blur(8px);box-shadow:0 -4px 20px rgba(0,0,0,.06);padding:8px 0;z-index:50;}
+  nav button{border:none;background:none;cursor:pointer;font-size:11px;color:var(--muted);
+    display:flex;flex-direction:column;align-items:center;gap:2px;flex:1;padding:4px 0;transition:.2s;}
+  nav button .ic{font-size:20px;line-height:1;}
+  nav button.active{color:var(--girl);font-weight:600;}
+  nav button.active .ic{transform:translateY(-2px);}
+
+  main{max-width:760px;margin:0 auto;padding:16px 14px;}
+  section{display:none;animation:fade .35s ease;}
+  section.active{display:block;}
+  @keyframes fade{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}
+  .card{background:var(--card);border-radius:18px;padding:18px;box-shadow:var(--shadow);margin-bottom:16px;}
+  .card h3{font-size:16px;margin-bottom:12px;display:flex;align-items:center;gap:6px;}
+  .card h3 .tag{font-size:12px;color:var(--girl-deep);background:var(--girl-soft);padding:2px 8px;border-radius:20px;}
+
+  label{display:block;font-size:13px;color:var(--muted);margin:10px 0 4px;}
+  input[type=text],input[type=date],textarea,select{width:100%;border:1.5px solid #eee;border-radius:12px;
+    padding:11px 12px;font-size:15px;font-family:inherit;color:var(--text);background:#fffdfe;outline:none;transition:.2s;}
+  input:focus,textarea:focus{border-color:var(--girl);}
+  textarea{resize:vertical;min-height:80px;}
+
+  .who{display:flex;gap:10px;margin:6px 0 4px;}
+  .who label{flex:1;margin:0;}
+  .who input{display:none;}
+  .who .pill{display:block;text-align:center;padding:10px;border-radius:12px;border:1.5px solid #eee;
+    background:#fffdfe;cursor:pointer;font-size:14px;transition:.2s;}
+  .who input:checked + .pill.boy{background:var(--boy);color:#fff;border-color:var(--boy);font-weight:600;}
+  .who input:checked + .pill.girl{background:var(--girl);color:#fff;border-color:var(--girl);font-weight:600;}
+
+  .moods{display:flex;flex-wrap:wrap;gap:8px;margin:6px 0;}
+  .moods label{margin:0;}
+  .moods input{display:none;}
+  .moods .m{font-size:22px;padding:6px 8px;border-radius:10px;background:#fffdfe;border:1.5px solid #eee;cursor:pointer;transition:.15s;}
+  .moods input:checked + .m{background:var(--girl-soft);transform:scale(1.12);border-color:var(--girl);}
+
+  .btn{display:inline-block;border:none;border-radius:12px;padding:12px 18px;background:var(--girl);color:#fff;
+    font-size:15px;font-weight:600;cursor:pointer;width:100%;margin-top:14px;transition:.2s;box-shadow:0 4px 14px rgba(255,107,157,.3);}
+  .btn:active{transform:scale(.98);}
+  .btn.ghost{background:#fff;color:var(--girl-deep);border:1.5px solid var(--girl);box-shadow:none;}
+  .btn.blue{background:var(--boy);box-shadow:0 4px 14px rgba(59,130,246,.3);}
+  .btn.blue.ghost{background:#fff;color:var(--boy-deep);border:1.5px solid var(--boy);box-shadow:none;}
+  .btn.gold{background:#f0a83c;box-shadow:0 4px 14px rgba(240,168,60,.35);}
+  .row{display:flex;gap:10px;}
+  .row .btn{flex:1;}
+  .hint{font-size:12px;color:var(--muted);margin-top:8px;line-height:1.5;}
+
+  .timeline{position:relative;padding:6px 0;}
+  .timeline::before{content:"";position:absolute;left:50%;top:0;bottom:0;width:2px;
+    background:linear-gradient(var(--boy),var(--girl));transform:translateX(-50%);}
+  .tl-item{display:flex;width:100%;margin:16px 0;position:relative;}
+  .tl-item.boy{justify-content:flex-start;}
+  .tl-item.girl{justify-content:flex-end;}
+  .tl-card{width:45%;background:#fff;border-radius:14px;padding:12px;box-shadow:var(--shadow);position:relative;}
+  .tl-item.boy .tl-card{border-left:4px solid var(--boy);}
+  .tl-item.girl .tl-card{border-right:4px solid var(--girl);}
+  .tl-dot{position:absolute;top:14px;width:14px;height:14px;border-radius:50%;border:3px solid #fff;box-shadow:0 0 0 2px rgba(0,0,0,.06);}
+  .tl-item.boy .tl-dot{right:-7px;background:var(--boy);}
+  .tl-item.girl .tl-dot{left:-7px;background:var(--girl);}
+  .tl-head{display:flex;align-items:center;gap:8px;margin-bottom:6px;}
+  .tl-head .mini{width:30px;height:30px;border-radius:50%;object-fit:cover;display:flex;align-items:center;justify-content:center;
+    color:#fff;font-weight:700;font-size:13px;overflow:hidden;}
+  .tl-item.boy .tl-head .mini{background:var(--boy);}
+  .tl-item.girl .tl-head .mini{background:var(--girl);}
+  .tl-head .nm{font-size:13px;font-weight:600;}
+  .tl-head .dt{font-size:11px;color:var(--muted);margin-left:auto;}
+  .tl-txt{font-size:14px;line-height:1.55;word-break:break-word;white-space:pre-wrap;}
+  .tl-photo{margin-top:8px;border-radius:10px;overflow:hidden;cursor:pointer;}
+  .tl-photo img{width:100%;display:block;}
+  .tl-del{position:absolute;top:8px;right:10px;color:#ddd;font-size:16px;cursor:pointer;}
+  .empty{text-align:center;color:var(--muted);padding:30px 0;font-size:14px;}
+
+  .anni-row{display:flex;align-items:center;gap:10px;padding:11px 0;border-bottom:1px solid #f4eef1;}
+  .anni-row:last-child{border-bottom:none;}
+  .anni-row .ai{width:34px;height:34px;border-radius:10px;background:var(--girl-soft);display:flex;align-items:center;justify-content:center;font-size:18px;}
+  .anni-row .info{flex:1;}
+  .anni-row .info .an{font-size:14px;font-weight:600;}
+  .anni-row .info .ad{font-size:12px;color:var(--muted);}
+  .anni-row .cd{font-size:13px;color:var(--boy-deep);font-weight:600;}
+  .anni-row .del{color:#ccc;font-size:18px;cursor:pointer;}
+
+  .overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;z-index:100;padding:20px;}
+  .overlay.show{display:flex;}
+  .overlay .box{background:#fff;border-radius:20px;padding:24px;max-width:440px;width:100%;max-height:90vh;overflow:auto;}
+  .overlay .box h2{font-size:19px;margin-bottom:6px;}
+  .overlay .box p{font-size:13px;color:var(--muted);margin-bottom:14px;line-height:1.6;}
+  .lightbox img{max-width:100%;border-radius:12px;}
+  .lockbadge{display:inline-block;font-size:11px;background:var(--girl-soft);color:var(--girl-deep);
+    padding:2px 8px;border-radius:20px;margin-left:6px;}
+
+  .toast{position:fixed;top:18px;left:50%;transform:translateX(-50%);background:rgba(58,44,51,.92);color:#fff;
+    padding:10px 18px;border-radius:24px;font-size:14px;z-index:200;opacity:0;transition:.3s;pointer-events:none;}
+  .toast.show{opacity:1;}
+
+  #player{position:fixed;inset:0;background:#1a1320;display:none;flex-direction:column;z-index:300;color:#fff;}
+  #player.show{display:flex;}
+  #player .stage{flex:1;display:flex;align-items:center;justify-content:center;padding:24px;position:relative;}
+  #player .slide{text-align:center;max-width:560px;animation:slidein .6s ease;width:100%;}
+  @keyframes slidein{from{opacity:0;transform:scale(.96);}to{opacity:1;transform:none;}}
+  #player .slide .ava{width:70px;height:70px;border-radius:50%;object-fit:cover;margin:0 auto 14px;display:flex;
+    align-items:center;justify-content:center;font-weight:700;font-size:24px;color:#fff;overflow:hidden;border:3px solid rgba(255,255,255,.4);}
+  #player .slide .nm{font-size:15px;opacity:.85;}
+  #player .slide .dt{font-size:12px;opacity:.55;margin-top:2px;}
+  #player .slide .mood{font-size:40px;margin:14px 0;}
+  #player .slide .txt{font-size:20px;line-height:1.7;white-space:pre-wrap;}
+  #player .slide .ph{margin:18px auto 0;max-width:420px;border-radius:14px;overflow:hidden;}
+  #player .slide .ph img{width:100%;display:block;}
+  #player .bar{display:flex;align-items:center;gap:16px;padding:18px 22px;}
+  #player .bar .pb{flex:1;height:4px;background:rgba(255,255,255,.2);border-radius:4px;position:relative;cursor:pointer;}
+  #player .bar .pf{position:absolute;left:0;top:0;bottom:0;background:linear-gradient(90deg,var(--boy),var(--girl));border-radius:4px;}
+  #player .bar button{background:none;border:none;color:#fff;font-size:24px;cursor:pointer;}
+  #player .bar .cnt{font-size:13px;opacity:.7;min-width:54px;text-align:center;}
+
+  @media(max-width:600px){
+    .hero{grid-template-columns:1fr;gap:14px;}
+    .center .days b{font-size:32px;}
+    .timeline::before{left:20px;}
+    .tl-item.boy,.tl-item.girl{justify-content:flex-end;}
+    .tl-card{width:calc(100% - 44px);}
+    .tl-item.boy .tl-card{border-left:none;border-right:4px solid var(--boy);}
+    .tl-item.boy .tl-dot{left:-7px;right:auto;}
+  }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="person boy">
+    <div class="ava" id="avaBoy">他</div>
+    <div class="nm" id="nmBoy">他</div>
+    <div class="tag">男生 · 蓝</div>
+    <div class="up" data-up="boy">上传头像</div>
+  </div>
+  <div class="center">
+    <div class="days">我们已经相爱<b id="bigDays">—</b><span>天</span></div>
+    <div class="anni" id="heroAnni">在一起纪念日：未设置</div>
+  </div>
+  <div class="person girl">
+    <div class="ava" id="avaGirl">她</div>
+    <div class="nm" id="nmGirl">她</div>
+    <div class="tag">女生 · 粉</div>
+    <div class="up" data-up="girl">上传头像</div>
+  </div>
+</div>
+<input type="file" id="avaFile" accept="image/*" style="display:none;">
+
+<div class="trialbar" id="trialBar">
+  <div class="txt" id="trialTxt">🧪 试用版 · 已记录 0/5 条 · 激活后解锁无限记录、回忆长图导出、短片播放</div>
+  <button id="trialBuy" style="background:var(--girl);">💳 购买</button>
+  <button id="trialActivate">激活</button>
+</div>
+
+<main>
+  <section id="sec-memory" class="active">
+    <div class="card">
+      <h3>✍️ 写一段回忆 <span class="tag">他是蓝 · 她是粉</span></h3>
+      <div class="who">
+        <label><input type="radio" name="mwho" value="boy" checked><span class="pill boy">他</span></label>
+        <label><input type="radio" name="mwho" value="girl"><span class="pill girl">她</span></label>
+      </div>
+      <label>日期</label>
+      <input type="date" id="memDate">
+      <label>心情</label>
+      <div class="moods" id="memMood">
+        <label><input type="radio" name="mmood" value="😊" checked><span class="m">😊</span></label>
+        <label><input type="radio" name="mmood" value="😍"><span class="m">😍</span></label>
+        <label><input type="radio" name="mmood" value="🥰"><span class="m">🥰</span></label>
+        <label><input type="radio" name="mmood" value="😘"><span class="m">😘</span></label>
+        <label><input type="radio" name="mmood" value="🤗"><span class="m">🤗</span></label>
+        <label><input type="radio" name="mmood" value="💕"><span class="m">💕</span></label>
+        <label><input type="radio" name="mmood" value="😢"><span class="m">😢</span></label>
+        <label><input type="radio" name="mmood" value="🌟"><span class="m">🌟</span></label>
+      </div>
+      <label>这段回忆</label>
+      <textarea id="memText" placeholder="例如：那天在江边散步，风很轻，你说以后每年都来……"></textarea>
+      <label>照片（可选）</label>
+      <input type="file" id="memPhoto" accept="image/*">
+      <button class="btn" id="addMem">保存这段回忆</button>
+    </div>
+
+    <div class="card">
+      <h3>🎞️ 恋爱心路历程</h3>
+      <div class="timeline" id="timeline"><div class="empty">还没有回忆，写第一条吧～</div></div>
+      <div class="row" style="margin-top:6px;">
+        <button class="btn blue" id="playBtn">▶ 播放回忆短片<span class="lockbadge" id="playLock">试用可玩</span></button>
+      </div>
+      <button class="btn ghost" id="exportPosterBtn" style="margin-top:10px;">🖼️ 导出回忆长图<span class="lockbadge" id="posterLock">需激活</span></button>
+    </div>
+  </section>
+
+  <section id="sec-anni">
+    <div class="card">
+      <h3>📅 纪念日</h3>
+      <div id="anniList"></div>
+      <div class="row" style="margin-top:12px;">
+        <input type="text" id="anniName" placeholder="名称，如：第一次约会">
+        <input type="date" id="anniDate" style="flex:1.2;">
+      </div>
+      <button class="btn ghost" id="addAnni" style="margin-top:10px;">添加纪念日</button>
+      <div class="hint">在一起日期在「设置」里填写，会自动算周年；这里可加其他纪念日（如领证日、第一次旅行）。</div>
+    </div>
+  </section>
+
+  <section id="sec-settings">
+    <div class="card">
+      <h3>⚙️ 基本设置</h3>
+      <label>他（男生）昵称</label>
+      <input type="text" id="setBoy" placeholder="例如：阿杰">
+      <label>她（女生）昵称</label>
+      <input type="text" id="setGirl" placeholder="例如：小敏">
+      <label>在一起日期</label>
+      <input type="date" id="setStart">
+      <div class="row" style="margin-top:10px;">
+        <button class="btn blue ghost" id="upBoy2">上传他的头像</button>
+        <button class="btn ghost" id="upGirl2">上传她的头像</button>
+      </div>
+      <button class="btn" id="saveSettings">保存设置</button>
+    </div>
+    <div class="card">
+      <h3>🔓 授权管理</h3>
+      <div id="licState" style="font-size:14px;margin-bottom:10px;"></div>
+      <button class="btn gold" id="buyFromSettings">💳 购买激活</button>
+      <button class="btn ghost" id="activateFromSettings" style="margin-top:10px;">输入激活码</button>
+      <div class="hint">本产品为一次性付费授权使用。购买后输入激活码即可永久解锁：无限回忆记录、回忆长图导出、短片播放。已部署授权服务器时，激活码与设备绑定、可远程停用；未部署则为本地离线激活。</div>
+    </div>
+    <div class="card">
+      <h3>💾 数据</h3>
+      <div class="row">
+        <button class="btn ghost" id="exportBtn">导出备份</button>
+        <button class="btn ghost" id="importBtn">导入备份</button>
+      </div>
+      <input type="file" id="importFile" accept="application/json" style="display:none;">
+      <button class="btn ghost" id="clearBtn" style="margin-top:10px;color:var(--girl-deep);border-color:var(--girl-deep);">清空全部数据</button>
+      <div class="hint">「导出备份」下载 .json 数据文件（换设备可导入恢复，不影响授权状态）。</div>
+    </div>
+  </section>
+</main>
+
+<nav id="nav">
+  <button data-sec="memory" class="active"><span class="ic">🎞️</span>回忆</button>
+  <button data-sec="anni"><span class="ic">📅</span>纪念日</button>
+  <button data-sec="settings"><span class="ic">⚙️</span>设置</button>
+</nav>
+
+<div class="overlay show" id="setupOverlay">
+  <div class="box">
+    <h2>💕 开始记录你们的心路历程</h2>
+    <p>先填基本信息，之后都能改。</p>
+    <label>他（男生）昵称</label>
+    <input type="text" id="sBoy" placeholder="例如：阿杰">
+    <label>她（女生）昵称</label>
+    <input type="text" id="sGirl" placeholder="例如：小敏">
+    <label>在一起日期</label>
+    <input type="date" id="sStart">
+    <div class="row" style="margin-top:10px;">
+      <button class="btn blue ghost" id="sUpBoy">上传他头像</button>
+      <button class="btn ghost" id="sUpGirl">上传她头像</button>
+    </div>
+    <button class="btn" id="setupBtn">开始记录</button>
+  </div>
+</div>
+
+<!-- 激活遮罩 -->
+<div class="overlay" id="activateOverlay">
+  <div class="box">
+    <h2>🔓 激活本产品</h2>
+    <p>本产品为一次性付费授权使用。请输入购买后获得的激活码（格式如 <b>A1-XXXXXX-XXXXXX</b>）。激活后本机永久解锁全部功能。</p>
+    <label>激活码</label>
+    <input type="text" id="licInput" placeholder="请输入激活码" style="text-transform:uppercase;letter-spacing:1px;">
+    <button class="btn gold" id="doActivate">确认激活</button>
+    <button class="btn ghost" id="closeActivate" style="margin-top:10px;">稍后再说</button>
+    <div class="hint">激活码错误将无法激活。如未购买，可继续使用免费试用（限 5 条回忆）。</div>
+  </div>
+</div>
+
+<!-- 购买遮罩 -->
+<div class="overlay" id="buyOverlay">
+  <div class="box">
+    <h2>💳 解锁全部功能</h2>
+    <p>一次性付费，永久解锁：无限回忆记录、回忆长图导出、短片播放。</p>
+    <div style="font-size:30px;font-weight:800;color:var(--girl-deep);margin:6px 0;" id="buyPrice">￥—</div>
+    <div id="buyPayBox" style="display:none;margin:12px 0;">
+      <a id="buyPayLink" href="#" target="_blank" class="btn gold" style="display:inline-block;text-decoration:none;">👉 点击前往支付</a>
+      <div class="hint" id="buyPayHint" style="margin-top:8px;">支付成功后本页会自动激活，无需手动输入。</div>
+    </div>
+    <div style="font-size:13px;color:var(--muted);margin:8px 0;">订单号：<code id="buyOrderId" style="background:#f4eef1;padding:2px 6px;border-radius:6px;">—</code></div>
+    <div id="buyStatus" style="font-size:14px;color:var(--girl-deep);min-height:20px;"></div>
+    <div class="row" style="margin-top:8px;">
+      <button class="btn ghost" id="buyHaveCode">我已有激活码</button>
+      <button class="btn ghost" id="closeBuy" style="margin-left:10px;">稍后再说</button>
+    </div>
+    <div class="hint">未配置授权服务器时此流程不可用；收款正式接入需微信/支付宝商户资质（详见部署说明）。</div>
+  </div>
+</div>
+
+<div class="overlay" id="lightbox"><div class="box" style="background:transparent;box-shadow:none;text-align:center;">
+  <img id="lightboxImg" src="" alt=""><div id="lightboxCap" style="color:#fff;margin-top:10px;font-size:14px;"></div>
+</div></div>
+
+<div id="player">
+  <div class="stage" id="playerStage"></div>
+  <div class="bar">
+    <button id="prevBtn">⏮</button>
+    <div class="pb" id="progress"><div class="pf" id="progressFill"></div></div>
+    <button id="playPauseBtn">⏸</button>
+    <button id="nextBtn">⏭</button>
+    <div class="cnt" id="slideCnt">0/0</div>
+    <button id="closePlayer">✕</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+  "use strict";
+  var KEY="loveJourney_v1";
+  var LIC_KEY="loveJourney_lic_v1";
+  // ⚠️ 此密钥决定激活码有效性。纯前端无法真正隐藏，泄露后他人可自行造码。
+  // 严肃售卖建议改为云端校验（预留扩展位 verifyOnline）。
+  var SECRET="LJ-LOVE-JOURNEY-2026-PROD-7f3a";
+
+  // ★ 授权后端地址：部署 server.js 后填这里，如 "https://love.example.com"
+  //   留空 = 使用本地离线校验（仅适合测试，无法防一码多用/撤销）。
+  // 零配置：同源托管时自动用当前域名走云端授权；本地双击(file://)自动离线；也可用 ?backend=https://你的域名 强制指定
+  var BACKEND_URL=(function(){
+    try{
+      var p=new URLSearchParams(location.search);
+      var o=p.get('backend');
+      if(o) return o.replace(/\/$/,'');
+      if(location.protocol==='http:'||location.protocol==='https:') return location.origin;
+    }catch(e){}
+    return '';
+  })();
+
+  /* ---------- 加密相关（SHA-256 / HMAC / Base32） ---------- */
+  var B32="ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
+  function utf8Bytes(str){var out=[];for(var i=0;i<str.length;i++){var c=str.charCodeAt(i);
+    if(c<0x80)out.push(c);else if(c<0x800){out.push(0xc0|(c>>6),0x80|(c&0x3f));}
+    else if(c<0xd800||c>=0xe000){out.push(0xe0|(c>>12),0x80|((c>>6)&0x3f),0x80|(c&0x3f));}
+    else{i++;var c2=str.charCodeAt(i);var cp=0x10000+(((c&0x3ff)<<10)|(c2&0x3ff));
+      out.push(0xf0|(cp>>18),0x80|((cp>>12)&0x3f),0x80|((cp>>6)&0x3f),0x80|(cp&0x3f));}}
+    return out;}
+  function sha256(bytes){
+    var K=[0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5,
+      0xd807aa98,0x12835b01,0x243185be,0x550c7dc3,0x72be5d74,0x80deb1fe,0x9bdc06a7,0xc19bf174,
+      0xe49b69c1,0xefbe4786,0x0fc19dc6,0x240ca1cc,0x2de92c6f,0x4a7484aa,0x5cb0a9dc,0x76f988da,
+      0x983e5152,0xa831c66d,0xb00327c8,0xbf597fc7,0xc6e00bf3,0xd5a79147,0x06ca6351,0x14292967,
+      0x27b70a85,0x2e1b2138,0x4d2c6dfc,0x53380d13,0x650a7354,0x766a0abb,0x81c2c92e,0x92722c85,
+      0xa2bfe8a1,0xa81a664b,0xc24b8b70,0xc76c51a3,0xd192e819,0xd6990624,0xf40e3585,0x106aa070,
+      0x19a4c116,0x1e376c08,0x2748774c,0x34b0bcb5,0x391c0cb3,0x4ed8aa4a,0x5b9cca4f,0x682e6ff3,
+      0x748f82ee,0x78a5636f,0x84c87814,0x8cc70208,0x90befffa,0xa4506ceb,0xbef9a3f7,0xc67178f2];
+    var H=[0x6a09e667,0xbb67ae85,0x3c6ef372,0xa54ff53a,0x510e527f,0x9b05688c,0x1f83d9ab,0x5be0cd19];
+    var m=bytes.slice();m.push(0x80);
+    while(m.length%64!==56)m.push(0);
+    var lenBits=bytes.length*8;
+    m.push(0,0,0,0,(lenBits>>>24)&0xff,(lenBits>>>16)&0xff,(lenBits>>>8)&0xff,lenBits&0xff);
+    for(var i=0;i<m.length;i+=64){
+      var w=new Array(64);
+      for(var j=0;j<16;j++){var idx=i+j*4;w[j]=((m[idx]<<24)|(m[idx+1]<<16)|(m[idx+2]<<8)|m[idx+3])>>>0;}
+      for(var j=16;j<64;j++){
+        var s0=((w[j-15]>>>7)|(w[j-15]<<25))^((w[j-15]>>>18)|(w[j-15]<<14))^(w[j-15]>>>3);
+        var s1=((w[j-2]>>>17)|(w[j-2]<<15))^((w[j-2]>>>19)|(w[j-2]<<13))^(w[j-2]>>>10);
+        w[j]=(w[j-16]+s0+w[j-7]+s1)|0;
+      }
+      var a=H[0],b=H[1],c=H[2],d=H[3],e=H[4],f=H[5],g=H[6],h=H[7];
+      for(var j=0;j<64;j++){
+        var S1=((e>>>6)|(e<<26))^((e>>>11)|(e<<21))^((e>>>25)|(e<<7));
+        var ch=(e&f)^((~e)&g);
+        var t1=(h+S1+ch+K[j]+w[j])|0;
+        var S0=((a>>>2)|(a<<30))^((a>>>13)|(a<<19))^((a>>>22)|(a<<10));
+        var maj=(a&b)^(a&c)^(b&c);
+        var t2=(S0+maj)|0;
+        h=g;g=f;f=e;e=(d+t1)|0;d=c;c=b;b=a;a=(t1+t2)|0;
+      }
+      H[0]=(H[0]+a)|0;H[1]=(H[1]+b)|0;H[2]=(H[2]+c)|0;H[3]=(H[3]+d)|0;
+      H[4]=(H[4]+e)|0;H[5]=(H[5]+f)|0;H[6]=(H[6]+g)|0;H[7]=(H[7]+h)|0;
+    }
+    var out=new Uint8Array(32);
+    for(var i=0;i<8;i++){out[i*4]=(H[i]>>>24)&0xff;out[i*4+1]=(H[i]>>>16)&0xff;out[i*4+2]=(H[i]>>>8)&0xff;out[i*4+3]=H[i]&0xff;}
+    return out;
+  }
+  function concatBytes(a,b){var r=[],i;for(i=0;i<a.length;i++)r.push(a[i]);for(i=0;i<b.length;i++)r.push(b[i]);return r;}
+  function hmacSha256(keyStr,msgStr){
+    var key=utf8Bytes(keyStr),msg=utf8Bytes(msgStr);
+    if(key.length>64)key=sha256(key);
+    var ipad=[],opad=[],i;
+    for(i=0;i<64;i++){var ki=(i<key.length)?key[i]:0;ipad.push(ki^0x36);opad.push(ki^0x5c);}
+    var inner=sha256(concatBytes(ipad,msg));
+    return sha256(concatBytes(opad,inner));
+  }
+  function bytesToBase32(bytes){
+    var out="",buffer=0,bits=0;
+    for(var i=0;i<bytes.length;i++){buffer=(buffer<<8)|bytes[i];bits+=8;
+      while(bits>=5){bits-=5;out+=B32[(buffer>>>(bits))&31];}}
+    if(bits>0)out+=B32[(buffer<<(5-bits))&31];
+    return out;
+  }
+  function signOf(serial){return bytesToBase32(hmacSha256(SECRET,serial)).slice(0,8);}
+  function isActivated(){var l=getLic();return !!l;}
+  function getLic(){var r=localStorage.getItem(LIC_KEY);if(!r)return null;try{return JSON.parse(r);}catch(e){return {code:r,serial:null,token:null};}}
+  function setLic(code,serial,token){localStorage.setItem(LIC_KEY,JSON.stringify({code:code,serial:serial,token:token,ts:Date.now()}));}
+  function deviceFP(){var k="lj_device_fp";var v=localStorage.getItem(k);if(!v){v=(window.crypto&&crypto.randomUUID)?crypto.randomUUID():(""+Date.now()+Math.random());localStorage.setItem(k,v);}return v;}
+  function api(path,body){return fetch(BACKEND_URL+path,{method:body?"POST":"GET",headers:{"Content-Type":"application/json"},body:body?JSON.stringify(body):undefined}).then(function(r){return r.json();});}
+  function verifyCode(raw){
+    if(!raw)return false;
+    var code=raw.trim().toUpperCase().replace(/\s/g,"");
+    var parts=code.split("-");
+    if(parts.length<2)return false;
+    var serial,sig;
+    if(parts.length>=3){serial=parts[parts.length-2];sig=parts[parts.length-1];}
+    else{serial=parts[0];sig=parts[1];}
+    if(serial.length<6||sig.length<6)return false;
+    return signOf(serial)===sig;
+  }
+
+  /* ---------- 云端授权（联网校验 / 防一码多用 / 可撤销） ---------- */
+  function doActivate(){
+    var v=document.getElementById("licInput").value.trim().toUpperCase();
+    if(!v){toast("请输入激活码");return;}
+    if(BACKEND_URL){
+      toast("正在联网验证…");
+      api("/api/verify",{code:v,device:deviceFP()}).then(function(res){
+        if(res&&res.ok){setLic(v,res.serial,res.token);renderTrial();renderLicState();
+          document.getElementById("activateOverlay").classList.remove("show");toast("激活成功，感谢支持 💕");}
+        else{toast("激活失败："+(res&&res.reason?res.reason:"激活码无效"));}
+      }).catch(function(){toast("网络验证失败，请检查服务器地址");});
+    }else{
+      if(verifyCode(v)){setLic(v,null,null);renderTrial();renderLicState();
+        document.getElementById("activateOverlay").classList.remove("show");toast("激活成功（离线模式·未防复用）");}
+      else{toast("激活码无效，请检查");}
+    }
+  }
+  // 购买流程：创建订单 -> 轮询支付状态 -> 自动用返回的码激活
+  var currentOrder=null;
+  function openBuy(){
+    if(!BACKEND_URL){toast("未配置授权服务器，暂不支持在线购买");return;}
+    document.getElementById("buyOverlay").classList.add("show");
+    document.getElementById("buyStatus").textContent="正在创建订单…";
+    document.getElementById("buyPayBox").style.display="none";
+    document.getElementById("buyOrderId").textContent="—";
+    api("/api/order/create",{product:"pro"}).then(function(res){
+      if(res&&res.orderId){
+        currentOrder=res.orderId;
+        document.getElementById("buyPrice").textContent="￥"+(res.amount||"");
+        document.getElementById("buyOrderId").textContent=res.orderId;
+        if(res.payUrl){
+          document.getElementById("buyPayLink").href=res.payUrl;
+          document.getElementById("buyPayBox").style.display="block";
+        }else{
+          document.getElementById("buyPayBox").style.display="block";
+          document.getElementById("buyPayLink").style.display="none";
+          document.getElementById("buyPayHint").textContent="请在管理后台确认收款（模拟/真实支付后），本页将自动激活。";
+        }
+        document.getElementById("buyStatus").textContent="订单已创建，等待支付…";
+        pollOrder();
+      }else{
+        document.getElementById("buyStatus").textContent="创建订单失败："+(res&&res.reason||"未知");
+      }
+    }).catch(function(){document.getElementById("buyStatus").textContent="无法连接服务器，请检查 BACKEND_URL";});
+  }
+  function pollOrder(){
+    if(!currentOrder)return;
+    api("/api/order/status?orderId="+encodeURIComponent(currentOrder)).then(function(res){
+      if(res&&res.status==="paid"){
+        document.getElementById("buyStatus").textContent="✅ 支付成功，正在激活…";
+        if(res.code){doRedeem(res.code);}else{document.getElementById("buyStatus").textContent="支付成功但未返回激活码";}
+        return;
+      }
+      setTimeout(pollOrder,2000);
+    }).catch(function(){setTimeout(pollOrder,3000);});
+  }
+  function doRedeem(code){
+    api("/api/verify",{code:code,device:deviceFP()}).then(function(res){
+      if(res&&res.ok){setLic(code,res.serial,res.token);renderTrial();renderLicState();
+        document.getElementById("buyOverlay").classList.remove("show");toast("激活成功，感谢支持 💕");}
+      else{document.getElementById("buyStatus").textContent="激活失败："+(res&&res.reason||"无效");}
+    });
+  }
+  function closeBuy(){document.getElementById("buyOverlay").classList.remove("show");currentOrder=null;}
+
+  /* ---------- 数据 ---------- */
+  var state={settings:{boy:"他",girl:"她",startDate:"",avaBoy:"",avaGirl:"",anniversaries:[]},memories:[]};
+  function load(){try{var raw=localStorage.getItem(KEY);if(raw){var d=JSON.parse(raw);if(d&&d.settings)state=d;}}catch(e){console.warn(e);}}
+  function save(){try{localStorage.setItem(KEY,JSON.stringify(state));}catch(e){toast("保存失败：空间可能已满");}}
+  function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7);}
+  function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];});}
+  function fmt(d){return d||"";}
+  function ini(s){return (s||"?").trim().charAt(0);}
+  function toast(m){var t=document.getElementById("toast");t.textContent=m;t.classList.add("show");setTimeout(function(){t.classList.remove("show");},1800);}
+  function nameOf(w){return w==="boy"?(state.settings.boy||"他"):(state.settings.girl||"她");}
+  function avaSrc(w){return w==="boy"?state.settings.avaBoy:state.settings.avaGirl;}
+  function daysBetween(a,b){var da=new Date(a+"T00:00:00"),db=new Date(b+"T00:00:00");return Math.max(0,Math.round((db-da)/86400000));}
+  function todayStr(){return new Date().toISOString().slice(0,10);}
+  var TRIAL_LIMIT=5;
+
+  function renderHero(){
+    var b=state.settings.boy||"他",g=state.settings.girl||"她";
+    document.getElementById("nmBoy").textContent=b;
+    document.getElementById("nmGirl").textContent=g;
+    setAva("avaBoy",state.settings.avaBoy,b);
+    setAva("avaGirl",state.settings.avaGirl,g);
+    if(state.settings.startDate){
+      var d=daysBetween(state.settings.startDate,todayStr());
+      document.getElementById("bigDays").textContent=d;
+      var y=new Date(state.settings.startDate+"T00:00:00").getFullYear();
+      var yrs=new Date().getFullYear()-y;
+      document.getElementById("heroAnni").innerHTML="在一起纪念日：<b>"+esc(state.settings.startDate)+"</b>"+(yrs>0?("（第 "+yrs+" 周年）"):"");
+    }else{
+      document.getElementById("bigDays").textContent="—";
+      document.getElementById("heroAnni").textContent="在一起纪念日：未设置";
+    }
+  }
+  function setAva(id,src,fallback){
+    var el=document.getElementById(id);
+    if(src){el.innerHTML='<img src="'+src+'" style="width:100%;height:100%;object-fit:cover;">';}
+    else{el.textContent=ini(fallback);}
+  }
+
+  function renderTrial(){
+    var bar=document.getElementById("trialBar");
+    if(isActivated()){bar.classList.remove("show");return;}
+    bar.classList.add("show");
+    document.getElementById("trialTxt").textContent="🧪 试用版 · 已记录 "+state.memories.length+"/"+TRIAL_LIMIT+" 条 · 激活后解锁无限记录、回忆长图导出、短片播放";
+    document.getElementById("playLock").textContent="试用可玩";
+    document.getElementById("posterLock").textContent="需激活";
+  }
+  function renderLicState(){
+    var el=document.getElementById("licState");var lic=getLic();
+    if(lic){
+      var html='<span style="color:var(--boy-deep);font-weight:600;">✅ 已激活</span>';
+      if(lic.serial)html+='　序列：<code style="background:#f4eef1;padding:2px 6px;border-radius:6px;">'+esc(lic.serial)+'</code>';
+      html+=BACKEND_URL?'　<span style="color:var(--girl-deep)">（云端授权·可远程管理）</span>':'　<span style="color:#c08a3e">（本机离线·无防复用）</span>';
+      el.innerHTML=html;
+    }else{
+      el.innerHTML='<span style="color:#c08a3e;font-weight:600;">未激活 · 当前为免费试用</span>';
+    }
+  }
+
+  function renderAnni(){
+    var box=document.getElementById("anniList");var list=state.settings.anniversaries||[];
+    if(!list.length){box.innerHTML='<div class="empty">还没有添加纪念日</div>';return;}
+    var h="";
+    list.forEach(function(a){
+      var base=new Date(a.date+"T00:00:00");var yrs=new Date().getFullYear()-base.getFullYear();
+      h+='<div class="anni-row"><div class="ai">📅</div><div class="info"><div class="an">'+esc(a.name)+'</div>'+
+         '<div class="ad">'+fmt(a.date)+(yrs>0?" · 第 "+yrs+" 周年":"")+'</div></div>'+
+         '<div class="cd" data-cd="'+esc(a.date)+'">—</div>'+
+         '<span class="del" data-del-a="'+esc(a.date)+'">🗑️</span></div>';
+    });
+    box.innerHTML=h;
+    Array.prototype.forEach.call(box.querySelectorAll("[data-cd]"),function(el){
+      var dt=el.getAttribute("data-cd");var base=new Date(dt+"T00:00:00");var t=new Date();t.setHours(0,0,0,0);
+      var c=new Date(t.getFullYear(),base.getMonth(),base.getDate());if(c<t)c=new Date(t.getFullYear()+1,base.getMonth(),base.getDate());
+      var diff=Math.round((c-t)/86400000);el.textContent=diff===0?"就是今天":(diff+"天");
+    });
+    Array.prototype.forEach.call(box.querySelectorAll("[data-del-a]"),function(el){
+      el.onclick=function(){var dt=el.getAttribute("data-del-a");state.settings.anniversaries=state.settings.anniversaries.filter(function(x){return x.date!==dt;});save();renderAnni();toast("已删除");};
+    });
+  }
+
+  function renderTimeline(){
+    var box=document.getElementById("timeline");
+    if(!state.memories.length){box.innerHTML='<div class="empty">还没有回忆，写第一条吧～</div>';return;}
+    var arr=state.memories.slice().sort(function(a,b){return (b.createdAt||0)-(a.createdAt||0);});
+    var h="";
+    arr.forEach(function(m){
+      var w=m.who;var src=avaSrc(w);
+      h+='<div class="tl-item '+w+'"><div class="tl-dot"></div><div class="tl-card">'+
+         '<span class="tl-del" data-del="'+m.id+'">🗑️</span>'+
+         '<div class="tl-head"><div class="mini">'+(src?'<img src="'+src+'" style="width:100%;height:100%;object-fit:cover;">':ini(nameOf(w)))+'</div>'+
+         '<div class="nm">'+esc(nameOf(w))+'</div><div class="dt">'+fmt(m.date)+'</div></div>'+
+         '<div class="tl-txt">'+m.mood+' '+esc(m.text)+'</div>'+
+         (m.photo?'<div class="tl-photo" data-ph="'+m.id+'"><img src="'+m.photo+'" alt=""></div>':'')+
+         '</div></div>';
+    });
+    box.innerHTML=h;
+    Array.prototype.forEach.call(box.querySelectorAll("[data-del]"),function(el){
+      el.onclick=function(){state.memories=state.memories.filter(function(x){return x.id!==el.getAttribute("data-del");});save();renderTimeline();renderTrial();toast("已删除");};
+    });
+    Array.prototype.forEach.call(box.querySelectorAll("[data-ph]"),function(el){
+      el.onclick=function(){var m=state.memories.filter(function(x){return x.id===el.getAttribute("data-ph");})[0];if(!m)return;
+        document.getElementById("lightboxImg").src=m.photo;document.getElementById("lightboxCap").textContent="";
+        document.getElementById("lightbox").classList.add("show");};
+    });
+  }
+
+  function renderSettings(){
+    document.getElementById("setBoy").value=state.settings.boy||"";
+    document.getElementById("setGirl").value=state.settings.girl||"";
+    document.getElementById("setStart").value=state.settings.startDate||"";
+    document.getElementById("memDate").value=todayStr();
+  }
+  function renderAll(){renderHero();renderAnni();renderTimeline();renderSettings();renderTrial();renderLicState();}
+
+  /* 头像上传 */
+  function pickAva(who){
+    var inp=document.getElementById("avaFile");
+    inp.onchange=function(){
+      var f=inp.files[0];if(!f)return;
+      var r=new FileReader();r.onload=function(e){compress(e.target.result,function(d){
+        if(who==="boy")state.settings.avaBoy=d;else state.settings.avaGirl=d;
+        save();renderHero();toast("头像已更新");});};
+      r.readAsDataURL(f);inp.value="";
+    };
+    inp.click();
+  }
+  function compress(dataUrl,cb){
+    var img=new Image();img.onload=function(){
+      var max=900,w=img.width,h=img.height;
+      if(w>max||h>max){var r=Math.min(max/w,max/h);w=Math.round(w*r);h=Math.round(h*r);}
+      var cv=document.createElement("canvas");cv.width=w;cv.height=h;cv.getContext("2d").drawImage(img,0,0,w,h);
+      try{cb(cv.toDataURL("image/jpeg",0.82));}catch(e){cb(dataUrl);}
+    };img.onerror=function(){cb(dataUrl);};img.src=dataUrl;
+  }
+
+  /* 激活 UI */
+  function openActivate(){document.getElementById("activateOverlay").classList.add("show");document.getElementById("licInput").value="";}
+
+  /* 事件 */
+  Array.prototype.forEach.call(document.querySelectorAll("#nav button"),function(b){
+    b.onclick=function(){var s=b.getAttribute("data-sec");
+      Array.prototype.forEach.call(document.querySelectorAll("#nav button"),function(x){x.classList.remove("active");});
+      b.classList.add("active");
+      Array.prototype.forEach.call(document.querySelectorAll("main section"),function(x){x.classList.remove("active");});
+      document.getElementById("sec-"+s).classList.add("active");};
+  });
+  Array.prototype.forEach.call(document.querySelectorAll("[data-up]"),function(el){el.onclick=function(){pickAva(el.getAttribute("data-up"));};});
+  document.getElementById("upBoy2").onclick=function(){pickAva("boy");};
+  document.getElementById("upGirl2").onclick=function(){pickAva("girl");};
+  document.getElementById("sUpBoy").onclick=function(){pickAva("boy");};
+  document.getElementById("sUpGirl").onclick=function(){pickAva("girl");};
+
+  document.getElementById("addMem").onclick=function(){
+    if(!isActivated() && state.memories.length>=TRIAL_LIMIT){
+      toast("试用已满 "+TRIAL_LIMIT+" 条，激活后无限记录 🔓");openActivate();return;}
+    var who=document.querySelector('input[name=mwho]:checked').value;
+    var date=document.getElementById("memDate").value||todayStr();
+    var mood=document.querySelector('input[name=mmood]:checked').value;
+    var text=document.getElementById("memText").value.trim();
+    var file=document.getElementById("memPhoto").files[0];
+    if(!text&&!file){toast("写点回忆或加张照片吧");return;}
+    function done(photo){
+      state.memories.push({id:uid(),who:who,date:date,mood:mood,text:text,photo:photo||"",createdAt:Date.now()});
+      save();renderTimeline();renderTrial();
+      document.getElementById("memText").value="";document.getElementById("memPhoto").value="";
+      toast("回忆已保存 💕");
+    }
+    if(file){var r=new FileReader();r.onload=function(e){compress(e.target.result,done);};r.readAsDataURL(file);}
+    else done("");
+  };
+
+  document.getElementById("addAnni").onclick=function(){
+    var n=document.getElementById("anniName").value.trim();var d=document.getElementById("anniDate").value;
+    if(!n||!d){toast("填名称和日期");return;}
+    state.settings.anniversaries=state.settings.anniversaries||[];
+    state.settings.anniversaries.push({name:n,date:d});save();renderAnni();
+    document.getElementById("anniName").value="";document.getElementById("anniDate").value="";toast("已添加 📅");
+  };
+
+  document.getElementById("saveSettings").onclick=function(){
+    state.settings.boy=document.getElementById("setBoy").value.trim()||"他";
+    state.settings.girl=document.getElementById("setGirl").value.trim()||"她";
+    state.settings.startDate=document.getElementById("setStart").value;
+    save();renderAll();toast("设置已保存");
+  };
+
+  document.getElementById("exportBtn").onclick=function(){
+    var blob=new Blob([JSON.stringify(state,null,2)],{type:"application/json"});
+    var a=document.createElement("a");a.href=URL.createObjectURL(blob);
+    a.download="恋爱心路历程备份_"+todayStr()+".json";a.click();toast("已导出备份");
+  };
+  document.getElementById("importBtn").onclick=function(){document.getElementById("importFile").click();};
+  document.getElementById("importFile").onchange=function(){
+    var f=this.files[0];if(!f)return;var r=new FileReader();
+    r.onload=function(e){try{var d=JSON.parse(e.target.result);if(d&&d.settings){state=d;save();renderAll();toast("导入成功 💕");}}catch(err){toast("文件格式不正确");}};
+    r.readAsText(f);this.value="";
+  };
+  document.getElementById("clearBtn").onclick=function(){
+    if(confirm("确定清空全部数据？不可恢复！建议先导出备份。")){
+      localStorage.removeItem(KEY);
+      state={settings:{boy:"他",girl:"她",startDate:"",avaBoy:"",avaGirl:"",anniversaries:[]},memories:[]};
+      save();renderAll();toast("已清空");
+    }
+  };
+
+  document.getElementById("setupBtn").onclick=function(){
+    var b=document.getElementById("sBoy").value.trim();var g=document.getElementById("sGirl").value.trim();var s=document.getElementById("sStart").value;
+    if(!b||!g||!s){toast("三项都要填哦");return;}
+    state.settings.boy=b;state.settings.girl=g;state.settings.startDate=s;save();renderAll();
+    document.getElementById("setupOverlay").classList.remove("show");toast("开始记录你们的心路历程 💕");
+  };
+
+  document.getElementById("trialActivate").onclick=openActivate;
+  document.getElementById("activateFromSettings").onclick=openActivate;
+  document.getElementById("doActivate").onclick=doActivate;
+  document.getElementById("closeActivate").onclick=function(){document.getElementById("activateOverlay").classList.remove("show");};
+  document.getElementById("licInput").addEventListener("keydown",function(e){if(e.key==="Enter")doActivate();});
+  // 购买流程
+  document.getElementById("trialBuy").onclick=openBuy;
+  document.getElementById("buyFromSettings").onclick=openBuy;
+  document.getElementById("closeBuy").onclick=closeBuy;
+  document.getElementById("buyHaveCode").onclick=function(){closeBuy();openActivate();};
+
+  document.getElementById("lightbox").onclick=function(){this.classList.remove("show");};
+
+  /* 短片播放 */
+  var playerIdx=0,playerTimer=null,playerPlaying=true;
+  function openPlayer(){
+    var arr=state.memories.slice().sort(function(a,b){return (a.createdAt||0)-(b.createdAt||0);});
+    if(!arr.length){toast("还没有回忆可播放");return;}
+    window.__playerArr=arr;playerIdx=0;playerPlaying=true;
+    document.getElementById("player").classList.add("show");showSlide();startTimer();
+  }
+  function showSlide(){
+    var arr=window.__playerArr;if(!arr||!arr.length)return;
+    if(playerIdx>=arr.length)playerIdx=0;if(playerIdx<0)playerIdx=arr.length-1;
+    var m=arr[playerIdx];var w=m.who;var src=avaSrc(w);
+    var html='<div class="slide"><div class="ava" style="background:'+(w==="boy"?"var(--boy)":"var(--girl)")+'">'+
+      (src?'<img src="'+src+'" style="width:100%;height:100%;object-fit:cover;">':ini(nameOf(w)))+'</div>'+
+      '<div class="nm">'+esc(nameOf(w))+'</div><div class="dt">'+fmt(m.date)+'</div>'+
+      '<div class="mood">'+m.mood+'</div><div class="txt">'+esc(m.text)+'</div>'+
+      (m.photo?'<div class="ph"><img src="'+m.photo+'"></div>':'')+'</div>';
+    document.getElementById("playerStage").innerHTML=html;
+    document.getElementById("slideCnt").textContent=(playerIdx+1)+"/"+arr.length;
+    document.getElementById("progressFill").style.width=((playerIdx+1)/arr.length*100)+"%";
+  }
+  function startTimer(){clearInterval(playerTimer);if(!playerPlaying)return;
+    playerTimer=setInterval(function(){playerIdx++;if(playerIdx>=window.__playerArr.length){playerIdx=0;}showSlide();},3500);}
+  document.getElementById("playBtn").onclick=function(){
+    if(!isActivated() && state.memories.length>=TRIAL_LIMIT){toast("激活后可播放完整短片 🔓");openActivate();return;}
+    openPlayer();
+  };
+  document.getElementById("nextBtn").onclick=function(){playerIdx++;showSlide();startTimer();};
+  document.getElementById("prevBtn").onclick=function(){playerIdx--;showSlide();startTimer();};
+  document.getElementById("playPauseBtn").onclick=function(){playerPlaying=!playerPlaying;this.textContent=playerPlaying?"⏸":"▶";startTimer();};
+  document.getElementById("progress").onclick=function(e){var r=this.getBoundingClientRect();
+    var p=(e.clientX-r.left)/r.width;playerIdx=Math.floor(p*window.__playerArr.length);showSlide();startTimer();};
+  document.getElementById("closePlayer").onclick=function(){clearInterval(playerTimer);document.getElementById("player").classList.remove("show");};
+
+  /* 导出长图 */
+  document.getElementById("exportPosterBtn").onclick=function(){
+    if(!isActivated()){toast("导出长图需激活后使用 🔓");openActivate();return;}
+    exportPoster();
+  };
+  function exportPoster(){
+    var arr=state.memories.slice().sort(function(a,b){return (a.createdAt||0)-(b.createdAt||0);});
+    var W=720,pad=36,scale=2;
+    var cv=document.createElement("canvas");var ctx=cv.getContext("2d");
+    var photos=arr.filter(function(m){return m.photo;});
+    var imgMap={};var todo=photos.length;
+    function finish(){
+      var blocks=[];blocks.push({type:"header"});
+      arr.forEach(function(m){var lines=wrap(ctx,m.mood+" "+m.text,W-pad*2-40,22);var bh=70+lines.length*30;if(m.photo)bh+=260;blocks.push({type:"mem",m:m,lines:lines,bh:bh});});
+      var totalH=pad;blocks.forEach(function(bk){totalH+=bk.bh+18;});
+      cv.width=W*scale;cv.height=totalH*scale;ctx.scale(scale,scale);
+      var grd=ctx.createLinearGradient(0,0,W,totalH);grd.addColorStop(0,"#eef4ff");grd.addColorStop(1,"#fff0f6");
+      ctx.fillStyle=grd;ctx.fillRect(0,0,W,totalH);
+      var y=pad;
+      blocks.forEach(function(bk){
+        if(bk.type==="header"){
+          ctx.textAlign="center";ctx.fillStyle="#2563eb";ctx.font="bold 30px sans-serif";
+          ctx.fillText((state.settings.boy||"他")+" & "+(state.settings.girl||"她")+" 的恋爱回忆",W/2,y+24);
+          ctx.fillStyle="#666";ctx.font="16px sans-serif";
+          var dline=state.settings.startDate?("已经相爱 "+daysBetween(state.settings.startDate,todayStr())+" 天"):"";
+          ctx.fillText(dline,W/2,y+52);y+=70;
+          ctx.strokeStyle="#ffd6e6";ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(pad,y);ctx.lineTo(W-pad,y);ctx.stroke();y+=14;
+        }else{
+          var m=bk.m,w=m.who,col=w==="boy"?"#3b82f6":"#ff6b9d";
+          ctx.beginPath();ctx.arc(pad+20,y+20,18,0,Math.PI*2);ctx.fillStyle=col;ctx.fill();
+          ctx.fillStyle="#fff";ctx.font="bold 16px sans-serif";ctx.textAlign="center";
+          if(avaSrc(w)&&imgMap[m.id]){ctx.save();ctx.beginPath();ctx.arc(pad+20,y+20,18,0,Math.PI*2);ctx.clip();ctx.drawImage(imgMap[m.id],pad+2,y+2,36,36);ctx.restore();}
+          else{ctx.fillText(ini(nameOf(w)),pad+20,y+26);}
+          ctx.textAlign="left";ctx.fillStyle=col;ctx.font="bold 17px sans-serif";ctx.fillText(nameOf(w),pad+48,y+14);
+          ctx.fillStyle="#999";ctx.font="13px sans-serif";ctx.fillText(fmt(m.date),pad+48,y+34);
+          ctx.fillStyle="#3a2c33";ctx.font="20px sans-serif";var ty=y+64;
+          bk.lines.forEach(function(ln){ctx.fillText(ln,pad+8,ty);ty+=30;});
+          if(m.photo&&imgMap[m.id]){ctx.drawImage(imgMap[m.id],pad+8,ty,W-pad*2-16,240);ty+=250;}
+          y+=bk.bh+18;
+        }
+      });
+      cv.toBlob(function(blob){var a=document.createElement("a");a.href=URL.createObjectURL(blob);
+        a.download="我们的恋爱回忆_"+todayStr()+".png";a.click();toast("长图已导出 🖼️");},"image/png");
+    }
+    if(todo===0){finish();return;}
+    photos.forEach(function(m){var im=new Image();im.onload=function(){imgMap[m.id]=im;if(--todo===0)finish();};im.onerror=function(){if(--todo===0)finish();};im.src=m.photo;});
+  }
+  function wrap(ctx,text,maxW,fontSize){
+    ctx.font=fontSize+"px sans-serif";var lines=[],cur="";
+    for(var i=0;i<text.length;i++){var t=cur+text[i];if(ctx.measureText(t).width>maxW){lines.push(cur);cur=text[i];}else cur=t;}
+    if(cur)lines.push(cur);return lines;
+  }
+
+  /* 启动 */
+  load();
+  if(state.settings&&state.settings.boy&&state.settings.girl&&state.settings.startDate){
+    document.getElementById("setupOverlay").classList.remove("show");
+  }
+  renderAll();
+  // 联网撤销检查：部署后端后，若授权被远程停用会在此清除并提示
+  (function checkRevoke(){
+    var lic=getLic();
+    if(BACKEND_URL&&lic&&lic.serial&&lic.token){
+      api("/api/check",{serial:lic.serial,token:lic.token,device:deviceFP()}).then(function(res){
+        if(res&&res.ok===false){localStorage.removeItem(LIC_KEY);renderTrial();renderLicState();toast("授权已被停用，请联系客服");}
+      }).catch(function(){});
+    }
+  })();
+})();
+</script>
+</body>
+</html>
