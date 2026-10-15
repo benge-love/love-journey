@@ -1,0 +1,16 @@
+{
+  "name": "love-journey-license-server",
+  "version": "1.0.0",
+  "description": "恋爱心路历程 · 授权后端（联网校验 + 微信支付 + 静态托管）",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "qrcode": "^1.5.4"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "license": "MIT"
+}
