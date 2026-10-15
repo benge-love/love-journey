@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>恋爱心路历程 · 授权管理后台</title>
+<style>
+  :root{--boy:#3b82f6;--girl:#ff6b9d;--bg:#f7f4f8;--card:#fff;--text:#3a2c33;--muted:#9b8790;border:1px solid #eee;}
+  *{box-sizing:border-box;margin:0;padding:0;font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;}
+  body{background:var(--bg);color:var(--text);padding:18px;max-width:920px;margin:0 auto;}
+  h1{font-size:22px;margin-bottom:4px;}
+  .sub{color:var(--muted);font-size:13px;margin-bottom:18px;}
+  .card{background:var(--card);border:1px solid #eee;border-radius:14px;padding:16px;margin-bottom:16px;box-shadow:0 6px 20px rgba(120,90,130,.06);}
+  .card h3{font-size:16px;margin-bottom:12px;}
+  label{display:block;font-size:13px;color:var(--muted);margin:10px 0 4px;}
+  input,button,select{font-size:14px;padding:9px 12px;border-radius:10px;border:1px solid #e3dde1;width:100%;}
+  input:focus{outline:none;border-color:var(--girl);}
+  button{cursor:pointer;border:none;background:var(--girl);color:#fff;font-weight:600;}
+  button.alt{background:var(--boy);}
+  button.ghost{background:#fff;color:var(--girl-deep,#e24d80);border:1px solid var(--girl);}
+  button.danger{background:#e5484d;color:#fff;}
+  .row{display:flex;gap:10px;}
+  .row>*{flex:1;}
+  .hint{font-size:12px;color:var(--muted);margin-top:8px;line-height:1.5;}
+  pre{background:#f6f3f7;border-radius:10px;padding:10px;font-size:12px;max-height:240px;overflow:auto;white-space:pre-wrap;word-break:break-all;}
+  .stat{display:flex;flex-wrap:wrap;gap:10px;}
+  .stat div{background:#f6f3f7;border-radius:12px;padding:12px 14px;flex:1;min-width:120px;}
+  .stat b{display:block;font-size:22px;color:var(--girl-deep,#e24d80);}
+  .stat span{font-size:12px;color:var(--muted);}
+  table{width:100%;border-collapse:collapse;font-size:12px;}
+  th,td{border-bottom:1px solid #eee;padding:8px 6px;text-align:left;}
+  th{color:var(--muted);font-weight:600;}
+  .pill{padding:2px 8px;border-radius:20px;font-size:11px;}
+  .pill.ok{background:#e7f7ec;color:#1a9e4b;}
+  .pill.pending{background:#fff3e0;color:#c77b16;}
+  .pill.revoked{background:#fdeaea;color:#e5484d;}
+  #loginBox{max-width:380px;margin:80px auto;}
+  .hidden{display:none;}
+  .msg{font-size:13px;margin-top:8px;min-height:18px;}
+  .ok{color:#1a9e4b;} .err{color:#e5484d;}
+  .tabs{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;}
+  .tabs button{width:auto;background:#fff;color:var(--muted);border:1px solid #e3dde1;}
+  .tabs button.active{background:var(--girl);color:#fff;border-color:var(--girl);}
+</style>
+</head>
+<body>
+
+<div id="loginBox" class="card">
+  <h1>🔐 授权管理后台</h1>
+  <div class="sub">请输入服务启动时生成的管理密钥（admin.key）</div>
+  <label>管理密钥</label>
+  <input type="password" id="adminKey" placeholder="粘贴 admin.key 中的密钥">
+  <button id="loginBtn" style="margin-top:12px;">登录</button>
+  <div class="msg" id="loginMsg"></div>
+  <div class="hint">提示：服务器同目录下 admin.key 文件里有密钥。也可通过环境变量 ADMIN_KEY 固定。</div>
+</div>
+
+<div id="app" class="hidden">
+  <h1>恋爱心路历程 · 授权后台</h1>
+  <div class="sub">已连接服务器 <span id="baseUrl"></span></div>
+
+  <div class="tabs">
+    <button data-tab="stats" class="active">数据概览</button>
+    <button data-tab="gen">生成激活码</button>
+    <button data-tab="batch">批次/密钥</button>
+    <button data-tab="orders">订单管理</button>
+    <button data-tab="price">价格设置</button>
+  </div>
+
+  <div class="card" data-panel="stats">
+    <h3>📊 数据概览</h3>
+    <div class="stat" id="statBox"></div>
+    <button class="ghost" id="refreshStats" style="margin-top:12px;width:auto;">刷新</button>
+  </div>
+
+  <div class="card hidden" data-panel="gen">
+    <h3>🎫 生成激活码（推荐：密钥只在服务器，不外泄）</h3>
+    <div class="row">
+      <div><label>数量</label><input type="number" id="genCount" value="10" min="1" max="500"></div>
+      <div><label>批次前缀（如 A1）</label><input type="text" id="genBatch" placeholder="留空=无批次"></div>
+      <div><label>每码可激活设备数</label><input type="number" id="genMax" value="1" min="1" max="10"></div>
+    </div>
+    <button id="genBtn" class="alt" style="margin-top:12px;width:auto;">生成并下载</button>
+    <div class="msg" id="genMsg"></div>
+    <pre id="genOut" class="hidden"></pre>
+  </div>
+
+  <div class="card hidden" data-panel="batch">
+    <h3>🚫 批次停用 / 恢复</h3>
+    <div class="row">
+      <div><label>批次前缀</label><input type="text" id="batchName" placeholder="如 A1"></div>
+      <div style="flex:0 0 auto;display:flex;gap:8px;align-items:flex-end;">
+        <button id="invalidBtn" class="danger" style="width:auto;">停用该批次</button>
+        <button id="revokeBtn" class="ghost" style="width:auto;">恢复该批次</button>
+      </div>
+    </div>
+    <div class="msg" id="batchMsg"></div>
+    <div class="hint">停用后该批次所有激活码立即失效（含已激活设备，下次联网校验会被撤销）。</div>
+
+    <h3 style="margin-top:20px;">🔑 密钥管理</h3>
+    <button id="rotateBtn" class="alt" style="width:auto;">生成新密钥（轮换）</button>
+    <div class="msg" id="keyMsg"></div>
+    <div class="hint">轮换后旧密钥仍有效（旧码可用）；如要彻底让旧码失效，先在下方列表中“停用”对应旧密钥。</div>
+    <div id="keyList" style="margin-top:12px;"></div>
+  </div>
+
+  <div class="card hidden" data-panel="orders">
+    <h3>🧾 订单管理</h3>
+    <button id="refreshOrders" class="ghost" style="width:auto;margin-bottom:12px;">刷新</button>
+    <div id="orderBox"></div>
+    <div class="hint">未接真实支付时：用户在前端下单后，你在这里点“确认收款并发卡”，前端会自动激活。接了微信/支付宝后，回调会自动发卡。</div>
+  </div>
+
+  <div class="card hidden" data-panel="price">
+    <h3>💰 价格设置</h3>
+    <label>授权价格（元）</label>
+    <input type="number" id="priceInput" step="0.1" value="9.9">
+    <button id="priceBtn" class="alt" style="margin-top:12px;width:auto;">保存</button>
+    <div class="msg" id="priceMsg"></div>
+  </div>
+</div>
+
+<script>
+var KEY="";
+var BASE=location.origin; // 与前端同源
+function api(path,body,method){method=method||(body?"POST":"GET");var url=BASE+path;if(method==="GET"){url+=(path.indexOf("?")>=0?"&":"?")+"adminKey="+encodeURIComponent(KEY);}return fetch(url,{method:method,headers:{"Content-Type":"application/json"},body:(method!=="GET"&&body)?JSON.stringify(Object.assign({adminKey:KEY},body)):undefined}).then(function(r){return r.json();});}
+function msg(el,text,ok){var e=document.getElementById(el);e.textContent=text;e.className="msg "+(ok?"ok":"err");}
+
+document.getElementById("loginBtn").onclick=function(){
+  KEY=document.getElementById("adminKey").value.trim();
+  if(!KEY){msg("loginMsg","请输入密钥",false);return;}
+  api("/api/admin/stats").then(function(r){
+    if(r.ok){document.getElementById("loginBox").classList.add("hidden");document.getElementById("app").classList.remove("hidden");document.getElementById("baseUrl").textContent=BASE;loadStats();}
+    else{msg("loginMsg","密钥错误："+(r.reason||""),false);}
+  }).catch(function(){msg("loginMsg","无法连接服务器",false);});
+};
+
+// Tabs
+Array.prototype.forEach.call(document.querySelectorAll(".tabs button"),function(b){
+  b.onclick=function(){
+    Array.prototype.forEach.call(document.querySelectorAll(".tabs button"),function(x){x.classList.remove("active");});
+    b.classList.add("active");
+    var t=b.getAttribute("data-tab");
+    Array.prototype.forEach.call(document.querySelectorAll("[data-panel]"),function(p){p.classList.add("hidden");});
+    document.querySelector('[data-panel="'+t+'"]').classList.remove("hidden");
+    if(t==="stats")loadStats(); if(t==="orders")loadOrders(); if(t==="batch")loadKeys();
+  };
+});
+
+function loadStats(){
+  api("/api/admin/stats").then(function(r){
+    if(!r.ok)return;
+    var h="";
+    h+=stat(r.generated,"已生成码");h+=stat(r.activated,"已激活设备");h+=stat(r.usedTotal,"累计激活次数");
+    h+=stat(r.invalidBatches.length,"停用批次");h+=stat(r.ordersPending,"待支付订单");h+=stat(r.ordersPaid,"已支付订单");
+    h+=stat("￥"+(r.revenue||0).toFixed(2),"累计收入");
+    document.getElementById("statBox").innerHTML=h;
+  });
+}
+function stat(v,label){return '<div><b>'+v+'</b><span>'+label+'</span></div>';}
+document.getElementById("refreshStats").onclick=loadStats;
+
+document.getElementById("genBtn").onclick=function(){
+  var count=parseInt(document.getElementById("genCount").value,10);
+  var batch=document.getElementById("genBatch").value.trim().toUpperCase();
+  var max=parseInt(document.getElementById("genMax").value,10)||1;
+  if(isNaN(count)||count<1){msg("genMsg","数量错误",false);return;}
+  api("/api/admin/generate",{count:count,batch:batch,maxActivations:max}).then(function(r){
+    if(r.ok){
+      msg("genMsg","已生成 "+r.count+" 个（批次 "+(r.batch||"无")+"）",true);
+      var pre=document.getElementById("genOut");pre.classList.remove("hidden");pre.textContent=r.codes.join("\n");
+      // 触发下载
+      var blob=new Blob([r.codes.join("\n")],{type:"text/plain"});var a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="激活码_"+(r.batch||"无")+"_"+Date.now()+".txt";a.click();
+      loadStats();
+    }else{msg("genMsg","失败："+(r.reason||""),false);}
+  });
+};
+
+document.getElementById("invalidBtn").onclick=function(){
+  var b=document.getElementById("batchName").value.trim().toUpperCase();
+  if(!b){msg("batchMsg","请输入批次",false);return;}
+  api("/api/admin/invalidate-batch",{batch:b}).then(function(r){if(r.ok){msg("batchMsg","已停用批次 "+b,true);loadStats();}else msg("batchMsg","失败："+(r.reason||""),false);});
+};
+document.getElementById("revokeBtn").onclick=function(){
+  var b=document.getElementById("batchName").value.trim().toUpperCase();
+  if(!b){msg("batchMsg","请输入批次",false);return;}
+  api("/api/admin/revoke-batch",{batch:b}).then(function(r){if(r.ok){msg("batchMsg","已恢复批次 "+b,true);loadStats();}else msg("batchMsg","失败："+(r.reason||""),false);});
+};
+document.getElementById("rotateBtn").onclick=function(){
+  if(!confirm("确认生成新密钥？旧密钥将暂时仍有效，可手动停用。"))return;
+  api("/api/admin/rotate-key",{label:"轮换-"+(new Date().toLocaleDateString())}).then(function(r){
+    if(r.ok){msg("keyMsg","新密钥已生成："+r.newPreview+"（旧密钥仍有效，需要时在下方停用）",true);loadKeys();}else msg("keyMsg","失败："+(r.reason||""),false);
+  });
+};
+function loadKeys(){
+  api("/api/admin/list-keys").then(function(r){
+    if(!r.ok)return;
+    var h="<table><tr><th>状态</th><th>标识</th><th>说明</th><th>轮换时间</th><th>操作</th></tr>";
+    r.keys.forEach(function(k){
+      h+="<tr><td><span class='pill "+(k.status==='active'?'ok':(k.status==='revoked'?'revoked':'pending'))+"'>"+k.status+"</span>"+(k.current?" ★当前":"")+"</td><td>"+k.preview+"</td><td>"+(k.label||"")+"</td><td>"+(k.rotatedAt||"-")+"</td>";
+      h+="<td>"+(k.current?"-":(k.status==='active'?"<button class='danger' style='width:auto;padding:4px 10px;' onclick=\"revokeKey('"+k.preview+"')\">停用</button>":"<button class='ghost' style='width:auto;padding:4px 10px;' onclick=\"revokeKey('"+k.preview+"')\">恢复</button>"))+"</td></tr>";
+    });
+    h+="</table>";
+    document.getElementById("keyList").innerHTML=h;
+  });
+}
+function revokeKey(prev){
+  if(!confirm("确认切换该密钥的启用/停用状态？"))return;
+  api("/api/admin/revoke-key",{preview:prev}).then(function(r){if(r.ok){msg("keyMsg","已更新密钥状态",true);loadKeys();loadStats();}else msg("keyMsg","失败："+(r.reason||""),false);});
+}
+
+function loadOrders(){
+  api("/api/admin/orders").then(function(r){
+    if(!r.ok)return;
+    if(!r.orders.length){document.getElementById("orderBox").innerHTML='<div class="hint">暂无订单</div>';return;}
+    var h="<table><tr><th>订单号</th><th>金额</th><th>状态</th><th>创建时间</th><th>操作</th></tr>";
+    r.orders.forEach(function(o){
+      var pill=o.status==='paid'?'ok':'pending';
+      h+="<tr><td>"+o.id+"</td><td>￥"+(o.amount||0)+"</td><td><span class='pill "+pill+"'>"+o.status+"</span></td><td>"+(o.createdAt||"").slice(0,19).replace("T"," ")+"</td>";
+      h+="<td>"+(o.status==='paid'?"<span class='ok'>已发卡</span>":"<button class='alt' style='width:auto;padding:4px 10px;' onclick=\"confirmOrder('"+o.id+"')\">确认收款发卡</button>")+"</td></tr>";
+    });
+    h+="</table>";
+    document.getElementById("orderBox").innerHTML=h;
+  });
+}
+function confirmOrder(id){
+  if(!confirm("确认已收到该订单款项并发卡？"))return;
+  api("/api/order/manual-confirm",{orderId:id}).then(function(r){
+    if(r.ok){alert("发卡成功，激活码：\n"+r.code);loadOrders();loadStats();}else alert("失败："+(r.reason||""));
+  });
+}
+document.getElementById("refreshOrders").onclick=loadOrders;
+
+document.getElementById("priceBtn").onclick=function(){
+  var p=parseFloat(document.getElementById("priceInput").value);
+  api("/api/admin/set-price",{price:p}).then(function(r){if(r.ok)msg("priceMsg","价格已设为 ￥"+r.price,true);else msg("priceMsg","失败："+(r.reason||""),false);});
+};
+// 进入价格页时拉取当前价
+document.querySelector('[data-tab="price"]').onclick=function(){};
+</script>
+</body>
+</html>
