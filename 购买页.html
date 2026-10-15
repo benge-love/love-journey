@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>恋爱心路历程 · 永久激活</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;}
+  body{background:linear-gradient(160deg,#eef4ff,#fff0f6);color:#3a2c33;min-height:100vh;padding:22px 16px 40px;}
+  .wrap{max-width:460px;margin:0 auto;}
+  .hero{text-align:center;padding:14px 0 6px;}
+  .hero .badge{display:inline-block;background:#fff;color:#e24d80;font-size:12px;padding:4px 12px;border-radius:20px;box-shadow:0 4px 14px rgba(120,90,130,.1);}
+  .hero h1{font-size:26px;margin:14px 0 6px;background:linear-gradient(90deg,#3b82f6,#ff6b9d);-webkit-background-clip:text;background-clip:text;color:transparent;}
+  .hero p{font-size:14px;color:#7a6c73;line-height:1.6;}
+  .price{text-align:center;margin:18px 0;}
+  .price b{font-size:40px;color:#e24d80;}
+  .price span{font-size:14px;color:#9b8790;}
+  .feats{background:#fff;border-radius:18px;padding:18px;box-shadow:0 10px 30px rgba(120,90,130,.1);}
+  .feats h3{font-size:15px;margin-bottom:12px;color:#3a2c33;}
+  .feats .f{display:flex;align-items:flex-start;gap:10px;margin:12px 0;font-size:14px;line-height:1.5;}
+  .feats .f .ic{font-size:20px;}
+  .btn{border:none;width:100%;padding:16px;border-radius:14px;font-size:17px;font-weight:700;color:#fff;background:linear-gradient(90deg,#3b82f6,#ff6b9d);box-shadow:0 8px 22px rgba(255,107,157,.35);cursor:pointer;margin-top:14px;}
+  .btn:active{transform:translateY(1px);}
+  .btn.ghost{background:#fff;color:#e24d80;border:1px solid #ff6b9d;box-shadow:none;font-size:14px;padding:12px;}
+  .btn.green{background:linear-gradient(90deg,#1a9e4b,#39c46a);box-shadow:0 8px 22px rgba(57,196,106,.35);}
+  .status{margin-top:14px;text-align:center;font-size:14px;color:#7a6c73;min-height:22px;}
+  .order{background:#fff7fb;border:1px dashed #ffb3d1;border-radius:14px;padding:14px;margin-top:14px;font-size:13px;color:#9b8790;text-align:center;}
+  .order code{color:#e24d80;font-size:14px;}
+  .wxbox{background:#fff;border:1px solid #e3dde1;border-radius:14px;padding:16px;margin-top:14px;text-align:center;display:none;}
+  .wxbox img{border-radius:10px;width:220px;height:220px;}
+  .wxbox .tip{font-size:13px;color:#7a6c73;margin-top:10px;}
+  .result{background:#fff;border-radius:18px;padding:22px;text-align:center;box-shadow:0 10px 30px rgba(120,90,130,.12);margin-top:18px;display:none;}
+  .result.show{display:block;animation:pop .4s ease;}
+  @keyframes pop{from{opacity:0;transform:scale(.96);}to{opacity:1;transform:none;}}
+  .result .ok{font-size:18px;color:#1a9e4b;font-weight:700;margin-bottom:10px;}
+  .result .code{font-size:22px;font-weight:800;letter-spacing:2px;color:#2563eb;background:#eef4ff;padding:12px;border-radius:12px;word-break:break-all;}
+  .result .steps{text-align:left;font-size:13px;color:#7a6c73;line-height:1.8;margin-top:14px;}
+  .poster{margin-top:18px;text-align:center;display:none;}
+  .poster.show{display:block;animation:pop .4s ease;}
+  .poster canvas{max-width:100%;border-radius:16px;box-shadow:0 12px 30px rgba(120,90,130,.18);}
+  .copy{margin-top:10px;}
+  .qrbox{margin-top:18px;text-align:center;}
+  .qrbox img{border-radius:12px;box-shadow:0 6px 18px rgba(0,0,0,.1);}
+  .qrbox .cap{font-size:12px;color:#9b8790;margin-top:8px;}
+  .note{font-size:12px;color:#9b8790;line-height:1.6;margin-top:20px;text-align:center;}
+  .linkrow{display:flex;gap:8px;margin-top:10px;}
+  .linkrow input{flex:1;border:1px solid #e3dde1;border-radius:10px;padding:10px;font-size:12px;background:#faf7fb;}
+  .toast{position:fixed;left:50%;top:30%;transform:translateX(-50%);background:rgba(0,0,0,.8);color:#fff;padding:12px 20px;border-radius:12px;font-size:14px;opacity:0;transition:.3s;pointer-events:none;}
+  .toast.show{opacity:1;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="hero">
+    <div class="badge">💕 专属于两个人的爱情纪念册</div>
+    <h1>恋爱心路历程</h1>
+    <p>左蓝右粉，记录你们在一起的每一天。<br>上传头像、写下回忆、生成专属爱情长图与回忆短片。</p>
+  </div>
+
+  <div class="price">
+    <b id="price">￥9.9</b><br><span>一次性付费 · 永久解锁全部功能</span>
+  </div>
+
+  <div class="feats">
+    <h3>🔓 激活后你将获得</h3>
+    <div class="f"><span class="ic">♾️</span><span><b>无限回忆记录</b>：试用仅 5 条，激活后想记多少记多少。</span></div>
+    <div class="f"><span class="ic">🖼️</span><span><b>导出回忆长图</b>：把你们的爱情故事排成竖版美图，发朋友圈。</span></div>
+    <div class="f"><span class="ic">▶️</span><span><b>播放回忆短片</b>：全屏幻灯片自动轮播你们的时光。</span></div>
+    <div class="f"><span class="ic">💾</span><span><b>数据本地保存 + 备份</b>：换设备可导入恢复。</span></div>
+  </div>
+
+  <!-- 微信扫码支付（配置后显示） -->
+  <button class="btn" id="wxBtn" style="display:none;">💚 微信扫码支付 · 永久激活</button>
+  <!-- 演示/手动确认（无支付资质时的收款方式） -->
+  <button class="btn ghost" id="demoBtn">立即购买（下单后作者确认收款）</button>
+
+  <div class="status" id="status"></div>
+  <div class="order" id="orderBox" style="display:none;">订单号：<code id="orderId">—</code><br>请按提示完成支付，本页会自动更新。</div>
+
+  <!-- 微信支付二维码 -->
+  <div class="wxbox" id="wxBox">
+    <div style="font-size:15px;font-weight:700;color:#1a9e4b;margin-bottom:10px;">请用微信扫一扫付款</div>
+    <img id="wxQr" alt="微信支付二维码">
+    <div class="tip">打开微信 → 扫一扫 → 支付完成后本页自动显示激活码</div>
+  </div>
+
+  <div class="result" id="result">
+    <div class="ok">✅ 支付成功，激活码已生成</div>
+    <div class="code" id="codeText">—</div>
+    <button class="btn ghost copy" id="copyCode">复制激活码</button>
+    <div class="steps">
+      <b>如何激活（30 秒）：</b><br>
+      1. 打开「恋爱心路历程」App（或网页版）<br>
+      2. 进入 <b>设置 → 授权管理 → 输入激活码</b><br>
+      3. 粘贴上方激活码，立即永久解锁 💕
+    </div>
+  </div>
+
+  <!-- 支付成功海报 -->
+  <div class="poster" id="poster">
+    <canvas id="posterCanvas" width="640" height="960"></canvas>
+    <button class="btn green" id="savePoster" style="margin-top:14px;">📥 保存激活海报</button>
+    <div class="tip" style="font-size:12px;color:#9b8790;margin-top:8px;">保存后可发朋友圈 / 私发给对方，扫码即到购买页</div>
+  </div>
+
+  <div class="qrbox" id="qrbox"></div>
+
+  <div class="note" id="note">
+    本产品由作者提供技术支持。支付完成后如遇未自动显示激活码，请稍候刷新本页，或联系作者。<br>
+    正式收银需微信支付商户资质；当前为演示/手动确认模式。
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+function toast(m){var t=document.getElementById("toast");t.textContent=m;t.classList.add("show");setTimeout(function(){t.classList.remove("show");},1600);}
+function api(path,body,method){return fetch(path,{method:method||(body?"POST":"GET"),headers:{"Content-Type":"application/json"},body:body?JSON.stringify(body):undefined}).then(function(r){return r.json();});}
+
+// 价格 + 微信支付配置
+var wxConfigured=false;
+api("/api/wechatpay/config").then(function(r){
+  if(r&&r.price)document.getElementById("price").textContent="￥"+r.price;
+  if(r&&r.configured){
+    wxConfigured=true;
+    document.getElementById("wxBtn").style.display="block";
+    document.getElementById("demoBtn").textContent="其他支付方式（联系作者）";
+    document.getElementById("note").innerHTML="本产品由作者提供技术支持。微信支付成功后本页自动显示激活码并生成海报；如未自动显示请刷新。";
+  }
+}).catch(function(){});
+
+var currentOrder=null;
+function showOrder(id){document.getElementById("orderBox").style.display="block";document.getElementById("orderId").textContent=id;}
+
+// 微信扫码支付
+document.getElementById("wxBtn").onclick=function(){
+  document.getElementById("status").textContent="正在创建微信支付订单…";
+  api("/api/order/create",{channel:"wechatpay"}).then(function(res){
+    if(res&&res.orderId){
+      currentOrder=res.orderId;showOrder(res.orderId);
+      api("/api/wechatpay/create-native",{orderId:res.orderId}).then(function(w){
+        if(w&&w.ok){
+          document.getElementById("wxBox").style.display="block";
+          if(w.qr)document.getElementById("wxQr").src=w.qr;
+          else document.getElementById("wxQr").src="/api/qr?text="+encodeURIComponent(w.codeUrl||"")+"&size=240";
+          document.getElementById("status").textContent="请用微信扫码支付，成功后自动发卡…";
+          poll();
+        }else{
+          document.getElementById("status").textContent="生成支付二维码失败："+(w&&w.reason||"未知");
+        }
+      }).catch(function(){document.getElementById("status").textContent="无法连接服务器";});
+    }else{
+      document.getElementById("status").textContent="创建订单失败："+(res&&res.reason||"未知");
+    }
+  }).catch(function(){document.getElementById("status").textContent="无法连接服务器";});
+};
+
+// 演示/手动确认（无支付资质时）
+document.getElementById("demoBtn").onclick=function(){
+  document.getElementById("status").textContent="正在创建订单…";
+  api("/api/order/create",{channel:"manual"}).then(function(res){
+    if(res&&res.orderId){
+      currentOrder=res.orderId;showOrder(res.orderId);
+      document.getElementById("status").textContent="已下单。请完成支付后联系作者，作者在后台确认收款后本页会自动显示激活码。";
+      poll();
+    }else{
+      document.getElementById("status").textContent="创建订单失败："+(res&&res.reason||"未知");
+    }
+  }).catch(function(){document.getElementById("status").textContent="无法连接服务器";});
+};
+
+function poll(){
+  if(!currentOrder)return;
+  api("/api/order/status?orderId="+encodeURIComponent(currentOrder)).then(function(res){
+    if(res&&res.status==="paid"){
+      document.getElementById("status").textContent="✅ 支付成功！";
+      document.getElementById("codeText").textContent=res.code||"—";
+      document.getElementById("result").classList.add("show");
+      buildPoster(res.code||"");
+      return;
+    }
+    setTimeout(poll,2000);
+  }).catch(function(){setTimeout(poll,3000);});
+}
+document.getElementById("copyCode").onclick=function(){
+  var c=document.getElementById("codeText").textContent;
+  if(navigator.clipboard){navigator.clipboard.writeText(c).then(function(){toast("已复制激活码");},function(){toast("复制失败，请手动选择");});}
+  else{toast("请长按选中复制");}
+};
+
+// 生成可保存的「激活海报」
+function buildPoster(code){
+  var canvas=document.getElementById("posterCanvas"),x=canvas.getContext("2d");
+  var W=canvas.width,H=canvas.height;
+  // 背景渐变（蓝→粉）
+  var g=x.createLinearGradient(0,0,W,H);
+  g.addColorStop(0,"#3b82f6");g.addColorStop(1,"#ff6b9d");
+  x.fillStyle=g;x.fillRect(0,0,W,H);
+  // 白色卡片
+  x.fillStyle="#ffffff";roundRect(x,40,90,W-80,H-180,28);x.fill();
+  // 标题
+  x.fillStyle="#e24d80";x.font="bold 46px -apple-system,'PingFang SC','Microsoft YaHei',sans-serif";
+  x.textAlign="center";x.fillText("恋爱心路历程",W/2,180);
+  x.fillStyle="#7a6c73";x.font="20px -apple-system,'PingFang SC',sans-serif";
+  x.fillText("永久激活 · 专属爱情纪念册",W/2,220);
+  // 激活码盒子
+  x.fillStyle="#eef4ff";roundRect(x,80,280,W-160,150,18);x.fill();
+  x.fillStyle="#9b8790";x.font="18px -apple-system,'PingFang SC',sans-serif";x.fillText("你的激活码",W/2,320);
+  x.fillStyle="#2563eb";x.font="bold 30px monospace";
+  x.fillText(code||"—",W/2,370);
+  // 步骤
+  x.fillStyle="#3a2c33";x.font="18px -apple-system,'PingFang SC',sans-serif";x.textAlign="left";
+  var sx=90,sy=480,line=34;
+  x.fillText("激活步骤：",sx,sy);sy+=line;
+  x.fillText("1. 打开「恋爱心路历程」",sx,sy);sy+=line;
+  x.fillText("2. 设置 → 授权管理 → 输入激活码",sx,sy);sy+=line;
+  x.fillText("3. 粘贴激活码，永久解锁 💕",sx,sy);
+  // 分享二维码
+  var buyUrl=location.origin+"/buy";
+  var img=new Image();
+  img.onload=function(){
+    var qx=W/2-70, qy=H-230, qw=140, qh=140;
+    x.fillStyle="#fff";roundRect(x,qx-10,qy-10,qw+20,qh+20,12);x.fill();
+    x.drawImage(img,qx,qy,qw,qh);
+    x.fillStyle="#9b8790";x.font="14px -apple-system,'PingFang SC',sans-serif";x.textAlign="center";
+    x.fillText("扫码分享给 TA · 一起记录爱情",W/2,H-60);
+    document.getElementById("poster").classList.add("show");
+  };
+  img.onerror=function(){document.getElementById("poster").classList.add("show");};
+  img.src="/api/qr?text="+encodeURIComponent(buyUrl)+"&size=140";
+}
+function roundRect(x,rx,ry,w,h,r){x.beginPath();x.moveTo(rx+r,ry);x.arcTo(rx+w,ry,rx+w,ry+h,r);x.arcTo(rx+w,ry+h,rx,ry+h,r);x.arcTo(rx,ry+h,rx,ry,r);x.arcTo(rx,ry,rx+w,ry,r);x.closePath();}
+
+document.getElementById("savePoster").onclick=function(){
+  var c=document.getElementById("posterCanvas");
+  try{
+    var a=document.createElement("a");
+    a.href=c.toDataURL("image/png");
+    a.download="恋爱心路历程激活海报.png";
+    a.click();toast("海报已保存");
+  }catch(e){toast("保存失败，请长按图片");}
+};
+
+// 购买页分享二维码（引流/直播挂载用）：在线时由后端 /api/qr 生成，离线降级
+(function showLink(){
+  var isOnline=(location.protocol==="http:"||location.protocol==="https:");
+  var url=isOnline?(location.origin+"/buy"):"(在线访问时自动显示购买页地址)";
+  document.getElementById("qrbox").innerHTML=
+    '<div class="card" style="background:#fff;border-radius:14px;padding:16px;box-shadow:0 8px 24px rgba(120,90,130,.1);">'+
+    '<div style="font-size:14px;font-weight:600;margin-bottom:10px;">🔗 购买页二维码（直播挂载 / 分享用）</div>'+
+    '<div style="text-align:center;margin:4px 0 6px;">'+
+      '<img id="shareQr" alt="购买页二维码" style="width:200px;height:200px;border-radius:12px;box-shadow:0 6px 18px rgba(0,0,0,.1);background:#f4f4f4;">'+
+    '</div>'+
+    '<div class="cap" id="qrCap" style="font-size:12px;color:#9b8790;margin-top:4px;">直播时把这张二维码挂在画面，观众扫码即可进入购买页。</div>'+
+    '<div class="linkrow" style="margin-top:12px;"><input id="buyUrl" value="'+url+'" readonly><button class="btn ghost" style="width:auto;margin:0;" id="copyUrl">复制</button></div>'+
+    '<button class="btn ghost" id="downQr" style="margin-top:10px;font-size:13px;width:100%;">📥 下载二维码图片（移动端可长按保存）</button>'+
+    '</div>';
+  var qr=document.getElementById("shareQr"),cap=document.getElementById("qrCap"),down=document.getElementById("downQr");
+  qr.onload=function(){down.style.display="block";};
+  qr.onerror=function(){
+    qr.style.display="none";down.style.display="none";
+    cap.innerHTML='当前为离线预览，无法生成二维码。部署上线后此处会自动显示；或用免费工具（如「草料二维码」）输入上方链接生成。';
+  };
+  if(isOnline){ qr.src="/api/qr?text="+encodeURIComponent(url)+"&size=200"; }
+  else { qr.onerror(); }
+  document.getElementById("copyUrl").onclick=function(){
+    var u=document.getElementById("buyUrl").value;
+    if(u.indexOf("http")===0&&navigator.clipboard){navigator.clipboard.writeText(u).then(function(){toast("已复制购买链接");});}
+    else{toast("在线访问后才会显示真实链接");}
+  };
+  down.onclick=function(){
+    try{var a=document.createElement("a");a.href=qr.src;a.download="购买页二维码.png";a.click();toast("二维码已下载");}
+    catch(e){toast("下载失败，请长按图片保存");}
+  };
+})();
+</script>
+</body>
+</html>
