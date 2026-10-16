@@ -798,13 +798,16 @@
     var photos=arr.filter(function(m){return m.photo;});
     var imgMap={};var todo=photos.length;
     function finish(){
+      function rr(c,rx,ry,w,h,r){c.beginPath();c.moveTo(rx+r,ry);c.arcTo(rx+w,ry,rx+w,ry+h,r);c.arcTo(rx+w,ry+h,rx,ry+h,r);c.arcTo(rx,ry+h,rx,ry,r);c.arcTo(rx,ry,rx+w,ry,r);c.closePath();}
+      var QR_H=330;
       var blocks=[];blocks.push({type:"header"});
       arr.forEach(function(m){var lines=wrap(ctx,m.mood+" "+m.text,W-pad*2-40,22);var bh=70+lines.length*30;if(m.photo)bh+=260;blocks.push({type:"mem",m:m,lines:lines,bh:bh});});
-      var totalH=pad;blocks.forEach(function(bk){totalH+=bk.bh+18;});
+      blocks.push({type:"qr"});
+      var totalH=pad;blocks.forEach(function(bk){totalH+=(bk.type==="qr"?QR_H:bk.bh)+18;});
       cv.width=W*scale;cv.height=totalH*scale;ctx.scale(scale,scale);
       var grd=ctx.createLinearGradient(0,0,W,totalH);grd.addColorStop(0,"#eef4ff");grd.addColorStop(1,"#fff0f6");
       ctx.fillStyle=grd;ctx.fillRect(0,0,W,totalH);
-      var y=pad;
+      var y=pad,qx,qy,qw,qh;
       blocks.forEach(function(bk){
         if(bk.type==="header"){
           ctx.textAlign="center";ctx.fillStyle="#2563eb";ctx.font="bold 30px sans-serif";
@@ -813,6 +816,17 @@
           var dline=state.settings.startDate?("已经相爱 "+daysBetween(state.settings.startDate,todayStr())+" 天"):"";
           ctx.fillText(dline,W/2,y+52);y+=70;
           ctx.strokeStyle="#ffd6e6";ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(pad,y);ctx.lineTo(W-pad,y);ctx.stroke();y+=14;
+        }else if(bk.type==="qr"){
+          ctx.fillStyle="#ffffff";rr(ctx,pad,y,W-pad*2,QR_H-18,18);ctx.fill();
+          ctx.textAlign="center";ctx.fillStyle="#e24d80";ctx.font="bold 21px sans-serif";
+          ctx.fillText("💕 给 TA 做个专属恋爱主页",W/2,y+40);
+          ctx.fillStyle="#9b8790";ctx.font="14px sans-serif";
+          ctx.fillText("扫码进入 · 记录你们的每一天",W/2,y+66);
+          qw=150;qh=150;qx=W/2-qw/2;qy=y+88;
+          ctx.fillStyle="#faf7fb";rr(ctx,qx-8,qy-8,qw+16,qh+16,10);ctx.fill();
+          ctx.fillStyle="#7a6c73";ctx.font="13px sans-serif";
+          ctx.fillText("永久激活价 ￥9.9 · 一人购买两人共享",W/2,y+QR_H-24);
+          y+=QR_H;
         }else{
           var m=bk.m,w=m.who,col=w==="boy"?"#3b82f6":"#ff6b9d";
           ctx.beginPath();ctx.arc(pad+20,y+20,18,0,Math.PI*2);ctx.fillStyle=col;ctx.fill();
@@ -827,8 +841,15 @@
           y+=bk.bh+18;
         }
       });
-      cv.toBlob(function(blob){var a=document.createElement("a");a.href=URL.createObjectURL(blob);
-        a.download="我们的恋爱回忆_"+todayStr()+".png";a.click();toast("长图已导出 🖼️");},"image/png");
+      var exported=false;
+      function doExport(){if(exported)return;exported=true;cv.toBlob(function(blob){var a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="我们的恋爱回忆_"+todayStr()+".png";a.click();toast("长图已导出 🖼️");},"image/png");}
+      var buyUrl=(location.protocol==="http:"||location.protocol==="https:")?location.origin+"/buy":"";
+      if(buyUrl){
+        var qi=new Image();
+        qi.onload=function(){try{ctx.drawImage(qi,qx,qy,qw,qh);}catch(e){}doExport();};
+        qi.onerror=function(){doExport();};
+        qi.src="/api/qr?text="+encodeURIComponent(buyUrl)+"&size=240";
+      }else{doExport();}
     }
     if(todo===0){finish();return;}
     photos.forEach(function(m){var im=new Image();im.onload=function(){imgMap[m.id]=im;if(--todo===0)finish();};im.onerror=function(){if(--todo===0)finish();};im.src=m.photo;});
