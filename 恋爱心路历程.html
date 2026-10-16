@@ -269,7 +269,7 @@
       <div id="licState" style="font-size:14px;margin-bottom:10px;"></div>
       <button class="btn gold" id="buyFromSettings">💳 购买激活</button>
       <button class="btn ghost" id="activateFromSettings" style="margin-top:10px;">输入激活码</button>
-      <div class="hint">本产品为一次性付费授权使用。购买后输入激活码即可永久解锁：无限回忆记录、回忆长图导出、短片播放。已部署授权服务器时，激活码与设备绑定、可远程停用；未部署则为本地离线激活。</div>
+      <div class="hint">本产品提供两档授权：<b>体验版 ￥9.9</b>（30天全功能）与 <b>永久版 ￥29.9</b>（一次付费永久解锁）。购买后输入激活码即可解锁：无限回忆记录、回忆长图导出、短片播放。已部署授权服务器时，激活码与设备绑定、可远程停用；未部署则为本地离线激活。</div>
     </div>
     <div class="card">
       <h3>💾 数据</h3>
@@ -312,7 +312,7 @@
 <div class="overlay" id="activateOverlay">
   <div class="box">
     <h2>🔓 激活本产品</h2>
-    <p>本产品为一次性付费授权使用。请输入购买后获得的激活码（格式如 <b>A1-XXXXXX-XXXXXX</b>）。激活后本机永久解锁全部功能。</p>
+    <p>本产品提供两档授权：<b>体验版 ￥9.9（30天）</b> 与 <b>永久版 ￥29.9</b>。请输入购买后获得的激活码（格式如 <b>A1-XXXXXX-XXXXXX</b>）。体验版有效期内、或永久版均可解锁全部功能。</p>
     <label>激活码</label>
     <input type="text" id="licInput" placeholder="请输入激活码" style="text-transform:uppercase;letter-spacing:1px;">
     <button class="btn gold" id="doActivate">确认激活</button>
@@ -445,9 +445,14 @@
     return out;
   }
   function signOf(serial){return bytesToBase32(hmacSha256(SECRET,serial)).slice(0,8);}
-  function isActivated(){var l=getLic();return !!l;}
+  function isActivated(){
+    var l=getLic(); if(!l)return false;
+    if(l.plan==="permanent") return true;
+    if(l.plan==="experience"){ return l.expiresAt ? (Date.now()<l.expiresAt) : true; }
+    return true; // 老离线码（无 plan）视为永久
+  }
   function getLic(){var r=localStorage.getItem(LIC_KEY);if(!r)return null;try{return JSON.parse(r);}catch(e){return {code:r,serial:null,token:null};}}
-  function setLic(code,serial,token){localStorage.setItem(LIC_KEY,JSON.stringify({code:code,serial:serial,token:token,ts:Date.now()}));}
+  function setLic(code,serial,token,plan,expiresAt){localStorage.setItem(LIC_KEY,JSON.stringify({code:code,serial:serial,token:token,plan:plan||"permanent",expiresAt:expiresAt||0,ts:Date.now()}));}
   function deviceFP(){var k="lj_device_fp";var v=localStorage.getItem(k);if(!v){v=(window.crypto&&crypto.randomUUID)?crypto.randomUUID():(""+Date.now()+Math.random());localStorage.setItem(k,v);}return v;}
   function api(path,body){return fetch(BACKEND_URL+path,{method:body?"POST":"GET",headers:{"Content-Type":"application/json"},body:body?JSON.stringify(body):undefined}).then(function(r){return r.json();});}
   function verifyCode(raw){
@@ -469,8 +474,9 @@
     if(BACKEND_URL){
       toast("正在联网验证…");
       api("/api/verify",{code:v,device:deviceFP()}).then(function(res){
-        if(res&&res.ok){setLic(v,res.serial,res.token);renderTrial();renderLicState();
-          document.getElementById("activateOverlay").classList.remove("show");toast("激活成功，感谢支持 💕");}
+        if(res&&res.ok){setLic(v,res.serial,res.token,res.plan,res.expiresAt);renderTrial();renderLicState();
+          var msg=res.plan==="experience"?"体验版激活成功（30天），感谢支持 💕":"激活成功，感谢支持 💕";
+          document.getElementById("activateOverlay").classList.remove("show");toast(msg);}
         else{toast("激活失败："+(res&&res.reason?res.reason:"激活码无效"));}
       }).catch(function(){toast("网络验证失败，请检查服务器地址");});
     }else{
@@ -481,13 +487,14 @@
   }
   // 购买流程：创建订单 -> 轮询支付状态 -> 自动用返回的码激活
   var currentOrder=null;
-  function openBuy(){
+  function openBuy(plan){
     if(!BACKEND_URL){toast("未配置授权服务器，暂不支持在线购买");return;}
+    plan=plan||"permanent";
     document.getElementById("buyOverlay").classList.add("show");
     document.getElementById("buyStatus").textContent="正在创建订单…";
     document.getElementById("buyPayBox").style.display="none";
     document.getElementById("buyOrderId").textContent="—";
-    api("/api/order/create",{product:"pro"}).then(function(res){
+    api("/api/order/create",{plan:plan}).then(function(res){
       if(res&&res.orderId){
         currentOrder=res.orderId;
         document.getElementById("buyPrice").textContent="￥"+(res.amount||"");
@@ -520,8 +527,9 @@
   }
   function doRedeem(code){
     api("/api/verify",{code:code,device:deviceFP()}).then(function(res){
-      if(res&&res.ok){setLic(code,res.serial,res.token);renderTrial();renderLicState();
-        document.getElementById("buyOverlay").classList.remove("show");toast("激活成功，感谢支持 💕");}
+      if(res&&res.ok){setLic(code,res.serial,res.token,res.plan,res.expiresAt);renderTrial();renderLicState();
+        var msg=res.plan==="experience"?"体验版激活成功（30天），感谢支持 💕":"激活成功，感谢支持 💕";
+        document.getElementById("buyOverlay").classList.remove("show");toast(msg);}
       else{document.getElementById("buyStatus").textContent="激活失败："+(res&&res.reason||"无效");}
     });
   }
@@ -569,14 +577,32 @@
     var bar=document.getElementById("trialBar");
     if(isActivated()){bar.classList.remove("show");return;}
     bar.classList.add("show");
-    document.getElementById("trialTxt").textContent="🧪 试用版 · 已记录 "+state.memories.length+"/"+TRIAL_LIMIT+" 条 · 激活后解锁无限记录、回忆长图导出、短片播放";
+    var lic=getLic();
+    if(lic&&lic.plan==="experience"){
+      document.getElementById("trialTxt").textContent="⏳ 体验已到期 · 升级永久版（￥29.9）解锁全部功能，数据不会丢失";
+      var b=document.getElementById("trialActivate");
+      b.textContent="升级永久版";b.onclick=function(){openBuy("permanent");};
+    }else{
+      document.getElementById("trialTxt").textContent="🧪 免费试用 · 已记录 "+state.memories.length+"/"+TRIAL_LIMIT+" 条 · 激活后解锁无限记录、回忆长图导出、短片播放";
+      var b2=document.getElementById("trialActivate");
+      b2.textContent="激活";b2.onclick=openActivate;
+    }
     document.getElementById("playLock").textContent="试用可玩";
     document.getElementById("posterLock").textContent="需激活";
   }
   function renderLicState(){
     var el=document.getElementById("licState");var lic=getLic();
     if(lic){
-      var html='<span style="color:var(--boy-deep);font-weight:600;">✅ 已激活</span>';
+      var plan=lic.plan||"permanent";
+      var html="";
+      if(plan==="experience"&&lic.expiresAt){
+        var left=Math.ceil((lic.expiresAt-Date.now())/86400000);
+        html = left>0 ? '<span style="color:var(--boy-deep);font-weight:600;">✅ 体验版 · 剩 '+left+' 天</span>' : '<span style="color:#c08a3e;font-weight:600;">⏳ 体验已到期 · 请升级永久版</span>';
+      }else if(plan==="experience"){
+        html='<span style="color:var(--boy-deep);font-weight:600;">✅ 体验版</span>';
+      }else{
+        html='<span style="color:var(--boy-deep);font-weight:600;">✅ 已激活（永久版）</span>';
+      }
       if(lic.serial)html+='　序列：<code style="background:#f4eef1;padding:2px 6px;border-radius:6px;">'+esc(lic.serial)+'</code>';
       html+=BACKEND_URL?'　<span style="color:var(--girl-deep)">（云端授权·可远程管理）</span>':'　<span style="color:#c08a3e">（本机离线·无防复用）</span>';
       el.innerHTML=html;
@@ -825,7 +851,7 @@
           qw=150;qh=150;qx=W/2-qw/2;qy=y+88;
           ctx.fillStyle="#faf7fb";rr(ctx,qx-8,qy-8,qw+16,qh+16,10);ctx.fill();
           ctx.fillStyle="#7a6c73";ctx.font="13px sans-serif";
-          ctx.fillText("永久激活价 ￥9.9 · 一人购买两人共享",W/2,y+QR_H-24);
+          ctx.fillText("体验版￥9.9 / 永久版￥29.9 · 一人购买两人共享",W/2,y+QR_H-24);
           y+=QR_H;
         }else{
           var m=bk.m,w=m.who,col=w==="boy"?"#3b82f6":"#ff6b9d";
