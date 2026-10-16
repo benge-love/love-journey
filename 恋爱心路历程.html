@@ -269,7 +269,7 @@
       <div id="licState" style="font-size:14px;margin-bottom:10px;"></div>
       <button class="btn gold" id="buyFromSettings">💳 购买激活</button>
       <button class="btn ghost" id="activateFromSettings" style="margin-top:10px;">输入激活码</button>
-      <div class="hint">本产品提供两档授权：<b>体验版 ￥9.9</b>（30天全功能）与 <b>永久版 ￥29.9</b>（一次付费永久解锁）。购买后输入激活码即可解锁：无限回忆记录、回忆长图导出、短片播放。已部署授权服务器时，激活码与设备绑定、可远程停用；未部署则为本地离线激活。</div>
+      <div class="hint">本产品提供两档授权：<b>体验版 ￥<span id="hintExp">9.9</span></b>（30天全功能）与 <b>永久版 ￥<span id="hintPer">29.9</span></b>（一次付费永久解锁）。购买后输入激活码即可解锁：无限回忆记录、回忆长图导出、短片播放。已部署授权服务器时，激活码与设备绑定、可远程停用；未部署则为本地离线激活。</div>
     </div>
     <div class="card">
       <h3>💾 数据</h3>
@@ -312,7 +312,7 @@
 <div class="overlay" id="activateOverlay">
   <div class="box">
     <h2>🔓 激活本产品</h2>
-    <p>本产品提供两档授权：<b>体验版 ￥9.9（30天）</b> 与 <b>永久版 ￥29.9</b>。请输入购买后获得的激活码（格式如 <b>A1-XXXXXX-XXXXXX</b>）。体验版有效期内、或永久版均可解锁全部功能。</p>
+    <p>本产品提供两档授权：<b>体验版 ￥<span id="actExp">9.9</span>（30天）</b> 与 <b>永久版 ￥<span id="actPer">29.9</span></b>。请输入购买后获得的激活码（格式如 <b>A1-XXXXXX-XXXXXX</b>）。体验版有效期内、或永久版均可解锁全部功能。</p>
     <label>激活码</label>
     <input type="text" id="licInput" placeholder="请输入激活码" style="text-transform:uppercase;letter-spacing:1px;">
     <button class="btn gold" id="doActivate">确认激活</button>
@@ -325,7 +325,20 @@
 <div class="overlay" id="buyOverlay">
   <div class="box">
     <h2>💳 解锁全部功能</h2>
-    <p>一次性付费，永久解锁：无限回忆记录、回忆长图导出、短片播放。</p>
+    <p style="font-size:14px;color:var(--muted);margin:4px 0 8px;">选择适合你们的版本：</p>
+    <div id="buyPlans" style="display:flex;gap:10px;margin:4px 0 8px;">
+      <div class="bplan" data-plan="experience" style="flex:1;border:2px solid #ffd6e6;border-radius:14px;padding:12px 6px;cursor:pointer;text-align:center;background:#fff7fb;transition:.15s;">
+        <div style="font-size:15px;font-weight:700;color:#ff6b9d;">🧪 体验版</div>
+        <div style="font-size:24px;font-weight:800;color:#e24d80;margin:4px 0;" id="buyPriceExp">￥9.9</div>
+        <div style="font-size:12px;color:#9b8790;">30天全功能</div>
+      </div>
+      <div class="bplan sel" data-plan="permanent" style="flex:1;border:2px solid #2563eb;border-radius:14px;padding:12px 6px;cursor:pointer;text-align:center;background:#f3f8ff;transition:.15s;">
+        <div style="font-size:15px;font-weight:700;color:#2563eb;">💎 永久版</div>
+        <div style="font-size:24px;font-weight:800;color:#2563eb;margin:4px 0;" id="buyPricePer">￥29.9</div>
+        <div style="font-size:12px;color:#9b8790;">一次付费·永久</div>
+      </div>
+    </div>
+    <div id="buyPlanNote" style="font-size:13px;color:var(--muted);min-height:18px;margin-bottom:6px;"></div>
     <div style="font-size:30px;font-weight:800;color:var(--girl-deep);margin:6px 0;" id="buyPrice">￥—</div>
     <div id="buyPayBox" style="display:none;margin:12px 0;">
       <a id="buyPayLink" href="#" target="_blank" class="btn gold" style="display:inline-block;text-decoration:none;">👉 点击前往支付</a>
@@ -487,9 +500,36 @@
   }
   // 购买流程：创建订单 -> 轮询支付状态 -> 自动用返回的码激活
   var currentOrder=null;
+  var mainSelPlan="permanent";
+  function applyMainPlan(plan){
+    mainSelPlan=plan;
+    document.querySelectorAll("#buyPlans .bplan").forEach(function(x){
+      var on=x.getAttribute("data-plan")===plan;
+      x.style.borderColor= on?(plan==="permanent"?"#2563eb":"#ff6b9d"):"#eee";
+      x.style.background= on?(plan==="permanent"?"#f3f8ff":"#fff7fb"):"#fff";
+      x.classList.toggle("sel",on);
+    });
+    document.getElementById("buyPlanNote").textContent= plan==="experience"
+      ? "体验版：30天全功能，到期可随时升级永久版，数据不会丢失"
+      : "永久版：一次付费，永久解锁全部功能，两人共享";
+  }
+  function refreshBuyPrices(){
+    api("/api/wechatpay/config").then(function(r){
+      if(r&&r.plans){
+        var e=r.plans.experience, p=r.plans.permanent;
+        if(e)document.getElementById("buyPriceExp").textContent="￥"+(e.price!=null?e.price:"9.9");
+        if(p)document.getElementById("buyPricePer").textContent="￥"+(p.price!=null?p.price:"29.9");
+      }
+    }).catch(function(){});
+  }
+  document.querySelectorAll("#buyPlans .bplan").forEach(function(el){
+    el.onclick=function(){applyMainPlan(el.getAttribute("data-plan"));};
+  });
   function openBuy(plan){
     if(!BACKEND_URL){toast("未配置授权服务器，暂不支持在线购买");return;}
-    plan=plan||"permanent";
+    if(plan) applyMainPlan(plan); else applyMainPlan(mainSelPlan);
+    refreshBuyPrices();
+    plan=mainSelPlan;
     document.getElementById("buyOverlay").classList.add("show");
     document.getElementById("buyStatus").textContent="正在创建订单…";
     document.getElementById("buyPayBox").style.display="none";
@@ -537,6 +577,22 @@
 
   /* ---------- 数据 ---------- */
   var state={settings:{boy:"他",girl:"她",startDate:"",avaBoy:"",avaGirl:"",anniversaries:[]},memories:[]};
+  // 价格单一数据源：默认与服务器一致，加载后从服务器同步，避免后台改价前端不同步
+  var PRICES={experience:9.9,permanent:29.9};
+  function syncPrices(){
+    if(!BACKEND_URL)return;
+    api("/api/wechatpay/config").then(function(r){
+      if(r&&r.plans){
+        if(r.plans.experience&&r.plans.experience.price!=null)PRICES.experience=r.plans.experience.price;
+        if(r.plans.permanent&&r.plans.permanent.price!=null)PRICES.permanent=r.plans.permanent.price;
+        var he=document.getElementById("hintExp"); if(he)he.textContent=PRICES.experience;
+        var hp=document.getElementById("hintPer"); if(hp)hp.textContent=PRICES.permanent;
+        var ae=document.getElementById("actExp"); if(ae)ae.textContent=PRICES.experience;
+        var ap=document.getElementById("actPer"); if(ap)ap.textContent=PRICES.permanent;
+        if(document.getElementById("trialBar").classList.contains("show"))renderTrial();
+      }
+    }).catch(function(){});
+  }
   function load(){try{var raw=localStorage.getItem(KEY);if(raw){var d=JSON.parse(raw);if(d&&d.settings)state=d;}}catch(e){console.warn(e);}}
   function save(){try{localStorage.setItem(KEY,JSON.stringify(state));}catch(e){toast("保存失败：空间可能已满");}}
   function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7);}
@@ -579,7 +635,7 @@
     bar.classList.add("show");
     var lic=getLic();
     if(lic&&lic.plan==="experience"){
-      document.getElementById("trialTxt").textContent="⏳ 体验已到期 · 升级永久版（￥29.9）解锁全部功能，数据不会丢失";
+      document.getElementById("trialTxt").textContent="⏳ 体验已到期 · 升级永久版（￥"+PRICES.permanent+"）解锁全部功能，数据不会丢失";
       var b=document.getElementById("trialActivate");
       b.textContent="升级永久版";b.onclick=function(){openBuy("permanent");};
     }else{
@@ -851,7 +907,7 @@
           qw=150;qh=150;qx=W/2-qw/2;qy=y+88;
           ctx.fillStyle="#faf7fb";rr(ctx,qx-8,qy-8,qw+16,qh+16,10);ctx.fill();
           ctx.fillStyle="#7a6c73";ctx.font="13px sans-serif";
-          ctx.fillText("体验版￥9.9 / 永久版￥29.9 · 一人购买两人共享",W/2,y+QR_H-24);
+          ctx.fillText("体验版￥"+PRICES.experience+" / 永久版￥"+PRICES.permanent+" · 一人购买两人共享",W/2,y+QR_H-24);
           y+=QR_H;
         }else{
           var m=bk.m,w=m.who,col=w==="boy"?"#3b82f6":"#ff6b9d";
@@ -892,6 +948,7 @@
     document.getElementById("setupOverlay").classList.remove("show");
   }
   renderAll();
+  syncPrices();
   // 联网撤销检查：部署后端后，若授权被远程停用会在此清除并提示
   (function checkRevoke(){
     var lic=getLic();
