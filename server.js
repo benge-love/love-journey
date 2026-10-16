@@ -321,7 +321,7 @@ const server = http.createServer(async (req, res) => {
     }
     // 微信支付配置探查（购买页据此决定显示扫码支付还是演示模式）
     if (url === "/api/wechatpay/config" && req.method === "GET") {
-      return sendJSON(res, 200, { ok: true, configured: wx.isConfigured(), price: data.settings.price, product: data.settings.product });
+      return sendJSON(res, 200, { ok: true, configured: wx.isConfigured(), price: data.settings.price, product: data.settings.product, plans: data.settings.plans, defaultPlan: data.settings.defaultPlan });
     }
     // 创建微信 NATIVE 支付（返回 code_url 与二维码 dataURL）
     if (url === "/api/wechatpay/create-native" && req.method === "POST") {
@@ -330,7 +330,9 @@ const server = http.createServer(async (req, res) => {
       if (!o) return sendJSON(res, 404, { ok: false, reason: "订单不存在，请先创建" });
       try {
         const totalFen = Math.round((Number(o.amount) || 0) * 100);
-        const codeUrl = await wx.createNativeOrder(body.orderId, totalFen, data.settings.product);
+        const planInfo = o.plan ? (data.settings.plans[o.plan] || null) : null;
+        const desc = data.settings.product + (planInfo ? (" · " + planInfo.label) : "");
+        const codeUrl = await wx.createNativeOrder(body.orderId, totalFen, desc);
         const lib = qrLib();
         let qrData = null;
         if (lib) { try { qrData = await lib.toDataURL(codeUrl, { margin: 1, width: 280, errorCorrectionLevel: "M" }); } catch (e) {} }
@@ -445,9 +447,16 @@ const server = http.createServer(async (req, res) => {
         return sendJSON(res, 200, { ok: true, orders: list });
       }
       if (url === "/api/admin/set-price" && req.method === "POST") {
-        data.settings.price = Number(body.price) || data.settings.price;
+        if (body && (body.experience != null || body.permanent != null)) {
+          if (body.experience != null) data.settings.plans.experience.price = Number(body.experience) || data.settings.plans.experience.price;
+          if (body.permanent != null) data.settings.plans.permanent.price = Number(body.permanent) || data.settings.plans.permanent.price;
+        } else if (body && body.price != null) {
+          const dp = data.settings.defaultPlan || "permanent";
+          data.settings.plans[dp].price = Number(body.price) || data.settings.plans[dp].price;
+        }
+        data.settings.price = data.settings.plans[data.settings.defaultPlan || "permanent"].price;
         saveData();
-        return sendJSON(res, 200, { ok: true, price: data.settings.price });
+        return sendJSON(res, 200, { ok: true, plans: data.settings.plans, price: data.settings.price });
       }
       return sendJSON(res, 404, { ok: false, reason: "未知管理接口" });
     }
