@@ -51,6 +51,9 @@
   <label>管理密钥</label>
   <input type="password" id="adminKey" placeholder="粘贴 admin.key 中的密钥">
   <button id="loginBtn" style="margin-top:12px;">登录</button>
+  <label style="display:flex;align-items:center;gap:6px;margin-top:10px;font-size:13px;color:var(--text);cursor:pointer;">
+    <input type="checkbox" id="rememberMe" style="width:auto;"> 记住此设备，下次自动登录
+  </label>
   <div class="msg" id="loginMsg"></div>
   <div class="hint">提示：服务器同目录下 admin.key 文件里有密钥。也可通过环境变量 ADMIN_KEY 固定。</div>
 </div>
@@ -131,10 +134,25 @@ document.getElementById("loginBtn").onclick=function(){
   KEY=document.getElementById("adminKey").value.replace(/[\u00A0\u200B\u200C\u200D\uFEFF\r\n\t ]/g,"");
   if(!KEY){msg("loginMsg","请输入密钥",false);return;}
   api("/api/admin/stats").then(function(r){
-    if(r.ok){document.getElementById("loginBox").classList.add("hidden");document.getElementById("app").classList.remove("hidden");document.getElementById("baseUrl").textContent=BASE;loadStats();}
+    if(r.ok){
+      // 记住密码：勾选则存入本机，取消勾选则清除
+      try{ if(document.getElementById("rememberMe").checked){localStorage.setItem("lj_admin_key",KEY);} else {localStorage.removeItem("lj_admin_key");} }catch(e){}
+      document.getElementById("loginBox").classList.add("hidden");document.getElementById("app").classList.remove("hidden");document.getElementById("baseUrl").textContent=BASE;loadStats();
+    }
     else{msg("loginMsg","密钥错误："+(r.reason||""),false);}
   }).catch(function(){msg("loginMsg","无法连接服务器",false);});
 };
+// 记住密码：打开页面时若本机存过密钥，自动填入并自动登录
+(function(){
+  try{
+    var saved=localStorage.getItem("lj_admin_key");
+    if(saved){
+      document.getElementById("adminKey").value=saved;
+      document.getElementById("rememberMe").checked=true;
+      setTimeout(function(){document.getElementById("loginBtn").click();},300);
+    }
+  }catch(e){}
+})();
 // 支持在输入框按回车直接登录
 document.getElementById("adminKey").addEventListener("keydown",function(e){if(e.key==="Enter"){document.getElementById("loginBtn").click();}});
 
