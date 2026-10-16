@@ -127,13 +127,16 @@ function api(path,body,method){method=method||(body?"POST":"GET");var url=BASE+p
 function msg(el,text,ok){var e=document.getElementById(el);e.textContent=text;e.className="msg "+(ok?"ok":"err");}
 
 document.getElementById("loginBtn").onclick=function(){
-  KEY=document.getElementById("adminKey").value.trim();
+  // 去除所有空白与不可见字符（含全角空格、零宽字符、换行），避免复制粘贴带入脏字符
+  KEY=document.getElementById("adminKey").value.replace(/[\u00A0\u200B\u200C\u200D\uFEFF\r\n\t ]/g,"");
   if(!KEY){msg("loginMsg","请输入密钥",false);return;}
   api("/api/admin/stats").then(function(r){
     if(r.ok){document.getElementById("loginBox").classList.add("hidden");document.getElementById("app").classList.remove("hidden");document.getElementById("baseUrl").textContent=BASE;loadStats();}
     else{msg("loginMsg","密钥错误："+(r.reason||""),false);}
   }).catch(function(){msg("loginMsg","无法连接服务器",false);});
 };
+// 支持在输入框按回车直接登录
+document.getElementById("adminKey").addEventListener("keydown",function(e){if(e.key==="Enter"){document.getElementById("loginBtn").click();}});
 
 // Tabs
 Array.prototype.forEach.call(document.querySelectorAll(".tabs button"),function(b){
