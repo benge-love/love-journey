@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>恋爱心路历程 · 永久激活</title>
+<title>恋爱心路历程 · 激活解锁</title>
 <style>
   *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;}
   body{background:linear-gradient(160deg,#eef4ff,#fff0f6);color:#3a2c33;min-height:100vh;padding:22px 16px 40px;}
@@ -47,6 +47,15 @@
   .linkrow input{flex:1;border:1px solid #e3dde1;border-radius:10px;padding:10px;font-size:12px;background:#faf7fb;}
   .toast{position:fixed;left:50%;top:30%;transform:translateX(-50%);background:rgba(0,0,0,.8);color:#fff;padding:12px 20px;border-radius:12px;font-size:14px;opacity:0;transition:.3s;pointer-events:none;}
   .toast.show{opacity:1;}
+  .plans{display:flex;gap:12px;margin:20px 0 0;}
+  .plan{flex:1;border:2px solid #eee;border-radius:16px;padding:16px 10px 14px;text-align:center;cursor:pointer;background:#fff;transition:.2s;position:relative;}
+  .plan.sel{border-color:#ff6b9d;box-shadow:0 8px 22px rgba(255,107,157,.22);background:#fff7fb;}
+  .plan .tag{position:absolute;top:-11px;left:50%;transform:translateX(-50%);background:#ff6b9d;color:#fff;font-size:11px;padding:2px 10px;border-radius:10px;white-space:nowrap;}
+  .plan .pn{font-size:14px;font-weight:700;color:#3a2c33;}
+  .plan .pp{font-size:30px;font-weight:800;color:#e24d80;margin:8px 0 2px;}
+  .plan .pp small{font-size:14px;font-weight:600;}
+  .plan .pd{font-size:12px;color:#9b8790;line-height:1.4;}
+  .pricenote{text-align:center;font-size:12px;color:#9b8790;margin:12px 0 2px;}
 </style>
 </head>
 <body>
@@ -57,9 +66,21 @@
     <p>别让恋爱只活在聊天记录里。<br>给 TA 一个专属网页——记下每一天、每一张合照、每一个心动瞬间，<br>生成美图一键发圈，甜给全世界看。</p>
   </div>
 
-  <div class="price">
-    <b id="price">￥9.9</b><br><span>一杯奶茶钱 · 永久解锁 · 买一份两人共享</span>
+  <div class="plans">
+    <div class="plan sel" data-plan="experience">
+      <div class="tag">先尝鲜</div>
+      <div class="pn">🧪 体验版</div>
+      <div class="pp"><small>￥</small>9.9</div>
+      <div class="pd">30天全功能畅享</div>
+    </div>
+    <div class="plan" data-plan="permanent">
+      <div class="tag">最划算</div>
+      <div class="pn">💎 永久版</div>
+      <div class="pp"><small>￥</small>29.9</div>
+      <div class="pd">一次付费·永久解锁</div>
+    </div>
   </div>
+  <div class="pricenote">体验到期可随时升级永久版，记录的数据不会丢失</div>
 
   <div class="feats">
     <h3>🔓 激活后你能做的事</h3>
@@ -70,7 +91,7 @@
   </div>
 
   <!-- 微信扫码支付（配置后显示） -->
-  <button class="btn" id="wxBtn" style="display:none;">💚 微信扫码支付 · 永久激活</button>
+  <button class="btn" id="wxBtn" style="display:none;">💚 微信扫码支付</button>
   <!-- 演示/手动确认（无支付资质时的收款方式） -->
   <button class="btn ghost" id="demoBtn">立即购买（下单后作者确认收款）</button>
 
@@ -92,7 +113,7 @@
       <b>如何激活（30 秒）：</b><br>
       1. 打开「恋爱心路历程」App（或网页版）<br>
       2. 进入 <b>设置 → 授权管理 → 输入激活码</b><br>
-      3. 粘贴上方激活码，立即永久解锁 💕
+      3. 粘贴上方激活码，立即解锁全部功能 💕
     </div>
   </div>
 
@@ -119,8 +140,15 @@ function api(path,body,method){return fetch(path,{method:method||(body?"POST":"G
 
 // 价格 + 微信支付配置
 var wxConfigured=false;
+var selectedPlan="experience";
+document.querySelectorAll(".plan").forEach(function(el){
+  el.onclick=function(){
+    document.querySelectorAll(".plan").forEach(function(x){x.classList.remove("sel");});
+    el.classList.add("sel");
+    selectedPlan=el.getAttribute("data-plan");
+  };
+});
 api("/api/wechatpay/config").then(function(r){
-  if(r&&r.price)document.getElementById("price").textContent="￥"+r.price;
   if(r&&r.configured){
     wxConfigured=true;
     document.getElementById("wxBtn").style.display="block";
@@ -135,7 +163,7 @@ function showOrder(id){document.getElementById("orderBox").style.display="block"
 // 微信扫码支付
 document.getElementById("wxBtn").onclick=function(){
   document.getElementById("status").textContent="正在创建微信支付订单…";
-  api("/api/order/create",{channel:"wechatpay"}).then(function(res){
+  api("/api/order/create",{channel:"wechatpay",plan:selectedPlan}).then(function(res){
     if(res&&res.orderId){
       currentOrder=res.orderId;showOrder(res.orderId);
       api("/api/wechatpay/create-native",{orderId:res.orderId}).then(function(w){
@@ -158,7 +186,7 @@ document.getElementById("wxBtn").onclick=function(){
 // 演示/手动确认（无支付资质时）
 document.getElementById("demoBtn").onclick=function(){
   document.getElementById("status").textContent="正在创建订单…";
-  api("/api/order/create",{channel:"manual"}).then(function(res){
+  api("/api/order/create",{channel:"manual",plan:selectedPlan}).then(function(res){
     if(res&&res.orderId){
       currentOrder=res.orderId;showOrder(res.orderId);
       document.getElementById("status").textContent="已下单。请完成支付后联系作者，作者在后台确认收款后本页会自动显示激活码。";
@@ -202,7 +230,7 @@ function buildPoster(code){
   x.fillStyle="#e24d80";x.font="bold 46px -apple-system,'PingFang SC','Microsoft YaHei',sans-serif";
   x.textAlign="center";x.fillText("恋爱心路历程",W/2,180);
   x.fillStyle="#7a6c73";x.font="20px -apple-system,'PingFang SC',sans-serif";
-  x.fillText("永久激活 · 专属爱情纪念册",W/2,220);
+  x.fillText("激活解锁 · 专属爱情纪念册",W/2,220);
   // 激活码盒子
   x.fillStyle="#eef4ff";roundRect(x,80,280,W-160,150,18);x.fill();
   x.fillStyle="#9b8790";x.font="18px -apple-system,'PingFang SC',sans-serif";x.fillText("你的激活码",W/2,320);
@@ -214,7 +242,7 @@ function buildPoster(code){
   x.fillText("激活步骤：",sx,sy);sy+=line;
   x.fillText("1. 打开「恋爱心路历程」",sx,sy);sy+=line;
   x.fillText("2. 设置 → 授权管理 → 输入激活码",sx,sy);sy+=line;
-  x.fillText("3. 粘贴激活码，永久解锁 💕",sx,sy);
+  x.fillText("3. 粘贴激活码，解锁全部功能 💕",sx,sy);
   // 分享二维码
   var buyUrl=location.origin+"/buy";
   var img=new Image();
