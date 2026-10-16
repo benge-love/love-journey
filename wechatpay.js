@@ -79,7 +79,7 @@ async function createNativeOrder(outTradeNo, totalFeeFen, description) {
   const body = {
     appid: cfg.appid,
     mchid: cfg.mchid,
-    description: description || "恋爱心路历程·永久激活",
+    description: description || "恋爱心路历程",
     out_trade_no: outTradeNo,
     notify_url: cfg.notifyUrl,
     amount: { total: totalFeeFen, currency: "CNY" }
