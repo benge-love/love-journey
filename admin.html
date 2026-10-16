@@ -116,9 +116,12 @@
 
   <div class="card hidden" data-panel="price">
     <h3>💰 价格设置</h3>
-    <label>授权价格（元）</label>
-    <input type="number" id="priceInput" step="0.1" value="9.9">
-    <button id="priceBtn" class="alt" style="margin-top:12px;width:auto;">保存</button>
+    <p style="font-size:13px;color:#9b8790;margin:0 0 12px;">设置两档授权价格（元）。修改后新订单按新价格计费，已售激活码不受影响。</p>
+    <label>体验版（30天）价格</label>
+    <input type="number" id="priceExp" step="0.1" value="9.9">
+    <label style="margin-top:10px;display:block;">永久版价格</label>
+    <input type="number" id="pricePer" step="0.1" value="29.9">
+    <button id="priceBtn" class="alt" style="margin-top:14px;width:auto;">保存</button>
     <div class="msg" id="priceMsg"></div>
   </div>
 </div>
@@ -253,11 +256,23 @@ function confirmOrder(id){
 document.getElementById("refreshOrders").onclick=loadOrders;
 
 document.getElementById("priceBtn").onclick=function(){
-  var p=parseFloat(document.getElementById("priceInput").value);
-  api("/api/admin/set-price",{price:p}).then(function(r){if(r.ok)msg("priceMsg","价格已设为 ￥"+r.price,true);else msg("priceMsg","失败："+(r.reason||""),false);});
+  var exp=parseFloat(document.getElementById("priceExp").value);
+  var per=parseFloat(document.getElementById("pricePer").value);
+  if(isNaN(exp)||isNaN(per)){msg("priceMsg","请输入有效价格",false);return;}
+  api("/api/admin/set-price",{experience:exp,permanent:per}).then(function(r){
+    if(r.ok)msg("priceMsg","价格已更新：体验版 ￥"+r.plans.experience.price+" / 永久版 ￥"+r.plans.permanent.price,true);
+    else msg("priceMsg","失败："+(r.reason||""),false);
+  });
 };
 // 进入价格页时拉取当前价
-document.querySelector('[data-tab="price"]').onclick=function(){};
+document.querySelector('[data-tab="price"]').onclick=function(){
+  api("/api/wechatpay/config").then(function(r){
+    if(r&&r.plans){
+      document.getElementById("priceExp").value=r.plans.experience.price;
+      document.getElementById("pricePer").value=r.plans.permanent.price;
+    }
+  }).catch(function(){});
+};
 </script>
 </body>
 </html>
