@@ -96,7 +96,15 @@ function defaultData() {
     invalidBatches: [],
     activations: {}, // serial -> {maxActivations, used, records:[{device,ip,at}], code, batch, createdAt, generated}
     orders: {},      // orderId -> {amount,status,code,createdAt,paidAt,note}
-    settings: { price: 9.9, product: "恋爱心路历程·永久激活" }
+    settings: {
+      price: 9.9,
+      product: "恋爱心路历程",
+      plans: {
+        experience: { price: 9.9, days: 30, label: "体验版" },
+        permanent:  { price: 29.9, days: 0,  label: "永久版" }
+      },
+      defaultPlan: "experience"
+    }
   };
 }
 let data;
@@ -182,10 +190,16 @@ function verifyCodeInternal(code, device, ip) {
   if (entry.used >= entry.maxActivations) {
     return { ok: false, reason: "该激活码已达激活上限（一码一设备）" };
   }
+  if (!entry.activatedAt) entry.activatedAt = new Date().toISOString();
+  const plan = entry.plan || "permanent";
+  const planInfo = data.settings.plans && data.settings.plans[plan];
+  const days = planInfo ? (planInfo.days || 0) : 0;
+  const expiresAt = days > 0 ? (new Date(entry.activatedAt).getTime() + days * 86400000) : 0;
+  entry.expiresAt = expiresAt;
   entry.used += 1;
   entry.records.push({ device: device || "unknown", ip: ip || "", at: new Date().toISOString() });
   saveData();
-  return { ok: true, serial: p.serial, token: makeToken(p.serial, device) };
+  return { ok: true, serial: p.serial, token: makeToken(p.serial, device), plan: plan, expiresAt: expiresAt };
 }
 
 function requireAdmin(reqBody, query) {
@@ -199,9 +213,10 @@ function issueCodeForOrder(order, orderId) {
   const code = makeCode("PAID", data.keys.active);
   const parts = code.split("-");
   const serial = parts[parts.length - 2];
+  const plan = order.plan || "permanent";
   order.status = "paid"; order.code = code; order.paidAt = new Date().toISOString();
   data.activations[serial] = {
-    maxActivations: 1, used: 0, records: [], code, batch: "PAID", createdAt: new Date().toISOString(), generated: true
+    maxActivations: 1, used: 0, records: [], code, batch: "PAID", createdAt: new Date().toISOString(), generated: true, plan: plan
   };
   saveData();
   return code;
@@ -293,13 +308,16 @@ const server = http.createServer(async (req, res) => {
     /* 订单 / 收款 */
     if (url === "/api/order/create" && req.method === "POST") {
       const orderId = "LJ" + Date.now().toString(36).toUpperCase() + crypto.randomBytes(3).toString("hex").toUpperCase();
-      const amount = Number(data.settings.price) || 9.9;
+      const planKey = (body.plan && data.settings.plans[body.plan]) ? body.plan : (data.settings.defaultPlan || "permanent");
+      const planInfo = data.settings.plans[planKey];
+      const amount = planInfo ? (Number(planInfo.price) || 9.9) : (Number(data.settings.price) || 9.9);
       data.orders[orderId] = {
         amount, status: "pending", code: null, createdAt: new Date().toISOString(), paidAt: null, note: "",
-        channel: body.channel === "wechatpay" ? "wechatpay" : "manual"
+        channel: body.channel === "wechatpay" ? "wechatpay" : "manual",
+        plan: planKey
       };
       saveData();
-      return sendJSON(res, 200, { ok: true, orderId, amount, status: "pending", channel: data.orders[orderId].channel });
+      return sendJSON(res, 200, { ok: true, orderId, amount, status: "pending", channel: data.orders[orderId].channel, plan: planKey });
     }
     // 微信支付配置探查（购买页据此决定显示扫码支付还是演示模式）
     if (url === "/api/wechatpay/config" && req.method === "GET") {
