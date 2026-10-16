@@ -70,13 +70,13 @@
     <div class="plan sel" data-plan="experience">
       <div class="tag">先尝鲜</div>
       <div class="pn">🧪 体验版</div>
-      <div class="pp"><small>￥</small>9.9</div>
+      <div class="pp"><small>￥</small><span id="cardPriceExp">9.9</span></div>
       <div class="pd">30天全功能畅享</div>
     </div>
     <div class="plan" data-plan="permanent">
       <div class="tag">最划算</div>
       <div class="pn">💎 永久版</div>
-      <div class="pp"><small>￥</small>29.9</div>
+      <div class="pp"><small>￥</small><span id="cardPricePer">29.9</span></div>
       <div class="pd">一次付费·永久解锁</div>
     </div>
   </div>
@@ -154,6 +154,10 @@ api("/api/wechatpay/config").then(function(r){
     document.getElementById("wxBtn").style.display="block";
     document.getElementById("demoBtn").textContent="其他支付方式（联系作者）";
     document.getElementById("note").innerHTML="本产品由作者提供技术支持。微信支付成功后本页自动显示激活码并生成海报；如未自动显示请刷新。";
+  }
+  if(r&&r.plans){
+    if(r.plans.experience)document.getElementById("cardPriceExp").textContent=r.plans.experience.price;
+    if(r.plans.permanent)document.getElementById("cardPricePer").textContent=r.plans.permanent.price;
   }
 }).catch(function(){});
 
